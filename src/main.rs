@@ -23,7 +23,8 @@ extern crate rand;
 extern crate termion;
 
 use rand::Rng;
-use std::io::{Write, stdout, stdin};
+use std::io::{Write, stdout, stdin, BufRead, BufReader, ErrorKind};
+use std::fs::{File, OpenOptions};
 use termion::clear;
 use termion::style;
 use termion::event::Key;
@@ -139,6 +140,7 @@ fn main() {
 
     'outer: loop {
         println!("{}", clear::All);
+
         println!(" Press Enter to roll the dice\n or Ctrl+c at any time to exit.");
         print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
 
@@ -240,15 +242,66 @@ fn main() {
             println!("{}", clear::All);
 
             if is_game_over(&scores) == true {
-                println!(" GAME OVER");
+
+
+                let mut name = String::new();
+                loop {
+                    println!("{}", clear::All);
+                    println!(" GAME OVER");
+                    print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
+                    print_dice(&dice, &to_keep);
+                    println!("Input a name to log your score:");
+                    stdin().read_line(&mut name)
+                        .expect("Failed to read line");
+                    name.pop(); // remove trailing newline
+                    let namelen = name.len();
+                    if namelen > 27 {
+                        println!("Too long! Max length is 27 characters.");
+                        name = String::from("");
+                    } else {
+                        let name_padding = 27 - namelen;
+                        for _ in 0..name_padding {
+                            name.push(' ');
+                        }
+                        break;
+                    }
+                }
+
+                let mut file = OpenOptions::new()
+                    .append(true)
+                    .open("highscore.txt")
+                    .unwrap_or_else(|error| {
+                        if error.kind() == ErrorKind::NotFound {
+                            File::create("highscore.txt").unwrap_or_else(|error| {
+                                panic!("Tried to create highscore.txt but there was a problem: {:?}", error);
+                            })
+                        } else {
+                            panic!("There was a problem opening the highscore file: {:?}", error);
+                        }
+                    });
+
+                match total {
+                    0...9 => { if let Err(e) = writeln!(file, "{}|   {:?}", name,total) {
+                        eprintln!("Couldn't write to file: {}", e); }
+                    },
+                    10...99 => { if let Err(e) = writeln!(file, "{}|  {:?}", name,total) {
+                        eprintln!("Couldn't write to file: {}", e); }
+                    },
+                    _ => { if let Err(e) = writeln!(file, "{}| {:?}", name,total) {
+                        eprintln!("Couldn't write to file: {}", e); }
+                    },
+                }
+                println!("{}", clear::All);
+                print_highscore(&read_highscore());
+                break;
+
             }
 
             print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
             print_dice(&dice, &to_keep);
 
-            if is_game_over(&scores) == true {
-                break;
-            }
+            //if is_game_over(&scores) == true {
+            //}
 
             for die in &mut dice.iter_mut() {
                 *die = rand::thread_rng().gen_range(1, 7);
@@ -510,6 +563,61 @@ fn print_score_sheet(scores: &mut [Score; 18], subtotal: &mut u8, bonus: &mut u8
     println!("╚═══════════════════════════╩═══════════════════╝");
 
     scores[17].value.replace_range(.., "   ");
+}
+
+fn read_highscore() -> Vec<(u32, String)> {
+    let file = File::open("highscore.txt").unwrap_or_else(|error| {
+        if error.kind() == ErrorKind::NotFound {
+            File::create("highscore.txt").unwrap_or_else(|error| {
+                panic!("Tried to create highscore.txt but there was a problem: {:?}", error);
+            })
+        } else {
+            panic!("There was a problem opening the highscore file: {:?}", error);
+        }
+    });
+    let file = BufReader::new(file);
+    let mut highscore = Vec::new();
+    for line in file.lines() {
+        let mut l = line.unwrap();
+        let mut name = String::new();
+        for c in l.chars() {
+            if c == '#' {
+                break;
+            }
+            if c == '|' {
+                break;
+            }
+            name.push(c);
+        }
+        let sc_begin = l.len() - 3;
+        if name.len() > 0 {
+            let mut sc = String::from(&l[sc_begin..]);
+            let sc: u32 = sc.trim().parse()
+                .expect("Not a number!");
+            highscore.push((sc, name));
+            highscore.sort();
+            highscore.reverse();
+        }
+    }
+    highscore
+}
+
+fn print_highscore(highscore: &Vec<(u32, String)>) {
+    println!("╔═══════════════════════════════════════════════╗");
+    println!("║HIGH SCORE                                     ║");
+    println!("╠═══════════════════════════╦═══════════════════╣");
+    println!("║Name                       ║             Score ║");
+    println!("╟───────────────────────────╫───────────────────╢");
+
+    for elem in highscore {
+        match elem.0 {
+            0...9   => { println!("║{}║                 {} ║", elem.1, elem.0); },
+            10...99 => { println!("║{}║                {} ║", elem.1, elem.0); },
+            _       => { println!("║{}║               {} ║", elem.1, elem.0); },
+        }
+    }
+
+    println!("╚═══════════════════════════╩═══════════════════╝");
 }
 
 fn print_dice(dice: &[usize; 5], to_keep: &[usize; 5]) {
