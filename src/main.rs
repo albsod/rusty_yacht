@@ -21,10 +21,12 @@
 
 extern crate rand;
 extern crate termion;
+extern crate dirs;
 
 use rand::Rng;
 use std::io::{Write, stdout, stdin, BufRead, BufReader, ErrorKind};
-use std::fs::{File, OpenOptions};
+use std::fs::*;
+use std::path::PathBuf;
 use termion::clear;
 use termion::style;
 use termion::event::Key;
@@ -54,6 +56,15 @@ enum SlotSelectStatus {
 }
 
 fn main() {
+
+    // Create highscore path if non-existing
+    let home = dirs::home_dir().expect("No home directory!");
+    let mut path = PathBuf::new();
+    path.push(home);
+    path.push(".config");
+    path.push("rusty-yacht");
+    create_dir_all(&path).expect("Could not create ~/.config/rusty-yacht");
+    path.push("highscore.txt");
 
     let mut bonus: u8 = 0;
     let mut subtotal: u8 = 0;
@@ -269,11 +280,11 @@ fn main() {
 
                 let mut file = OpenOptions::new()
                     .append(true)
-                    .open("highscore.txt")
+                    .open(&path)
                     .unwrap_or_else(|error| {
                         if error.kind() == ErrorKind::NotFound {
-                            File::create("highscore.txt").unwrap_or_else(|error| {
-                                panic!("Tried to create highscore.txt but there was a problem: {:?}", error);
+                            File::create(&path).unwrap_or_else(|error| {
+                                panic!("Tried to create ~/.config/rusty-yacht/highscore.txt but there was a problem: {:?}", error);
                             })
                         } else {
                             panic!("There was a problem opening the highscore file: {:?}", error);
@@ -292,7 +303,7 @@ fn main() {
                     },
                 }
                 println!("{}", clear::All);
-                print_highscore(&read_highscore());
+                print_highscore(&read_highscore(&path));
                 break;
 
             }
@@ -565,11 +576,11 @@ fn print_score_sheet(scores: &mut [Score; 18], subtotal: &mut u8, bonus: &mut u8
     scores[17].value.replace_range(.., "   ");
 }
 
-fn read_highscore() -> Vec<(u32, String)> {
-    let file = File::open("highscore.txt").unwrap_or_else(|error| {
+fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String)> {
+    let file = File::open(&path).unwrap_or_else(|error| {
         if error.kind() == ErrorKind::NotFound {
-            File::create("highscore.txt").unwrap_or_else(|error| {
-                panic!("Tried to create highscore.txt but there was a problem: {:?}", error);
+            File::create(&path).unwrap_or_else(|error| {
+                panic!("Tried to create ~/.config/rusty-yacht/highscore.txt but there was a problem: {:?}", error);
             })
         } else {
             panic!("There was a problem opening the highscore file: {:?}", error);
