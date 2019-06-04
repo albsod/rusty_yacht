@@ -1,7 +1,7 @@
 Rusty Yacht README
 ------------------
 
-Version 0.9 by Albin Söderqvist <albin@fripost.org>, January 2019.
+Version 0.9.3 by Albin Söderqvist <albin@fripost.org>, June 2019.
 
 Rusty Yacht is a Yatzy game for the terminal implemented in Rust.
 
@@ -73,6 +73,7 @@ Copying conditions
 
 Rusty Yacht: GNU GPL version 3 or, at your option, any later version
 This README: Creative Commons Attribution-ShareAlike 3.0 Unported License
-Termion library: MIT/X11
-Random library: Apache-2.0 or MIT/X11
-The Rust Programming language: Apache-2.0 or MIT/X11
+Dirs library <https://crates.io/crates/dirs>: Apache-2.0 or MIT/X11 
+Random library <https://crates.io/crates/rand>: Apache-2.0 or MIT/X11 
+Termion library <https://crates.io/crates/termion>: MIT/X11
+The Rust Programming language <https://rust-lang.org>: Apache-2.0 or MIT/X11
