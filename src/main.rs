@@ -1127,9 +1127,13 @@ fn large_str(dice: &[usize; 5]) -> Option<usize> {
 fn full_house(dice: &[usize; 5]) -> Option<usize> {
     let mut dice_str: [usize; 5] = dice.clone();
     dice_str.sort();
-    if dice_str[0] == dice_str[1] &&
-        dice_str[3] == dice_str[4] &&
-        (dice_str[2] == dice_str[1]) || (dice_str[2] == dice_str[3]) {
+    if ((dice_str[0] == dice_str[1] && dice_str[1] == dice_str[2]) &&
+        (dice_str[3] == dice_str[4])) ||
+        ((dice_str[0] == dice_str[1]) &&
+         (dice_str[2] == dice_str[3] && dice_str[3] == dice_str[4])) &&
+        (dice_str[0] == dice_str[1]
+         && dice_str[1] == dice_str[2]
+         && dice_str[2] == dice_str[3]) {
             let value = dice.iter().fold(0,|a, &b| a + b);
             return Some(value);
         }
