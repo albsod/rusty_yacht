@@ -202,16 +202,26 @@ fn main() {
                                                          break;
                                                      },
                                                      Key::Up => {
-                                                         i -= 1;
+                                                         if i != 0 {
+                                                             i -= 1;
+                                                             lines_selected[i+1] = 0;
+                                                         } else {
+                                                             i = 14;
+                                                             lines_selected[0] = 0;
+                                                         }
                                                          lines_selected[i] = 1;
-                                                         lines_selected[i+1] = 0;
                                                          println!("{}", clear::All);
                                                          break;
                                                      },
                                                      Key::Down => {
-                                                         i += 1;
+                                                         if i != 14 {
+                                                             i += 1;
+                                                             lines_selected[i-1] = 0;
+                                                         } else {
+                                                             i = 0;
+                                                             lines_selected[14] = 0;
+                                                         }
                                                          lines_selected[i] = 1;
-                                                         lines_selected[i-1] = 0;
                                                          println!("{}", clear::All);
                                                          break;
                                                      },
