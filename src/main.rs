@@ -1152,9 +1152,9 @@ fn full_house(dice: &[usize; 5]) -> Option<usize> {
         (dice_str[3] == dice_str[4])) ||
         ((dice_str[0] == dice_str[1]) &&
          (dice_str[2] == dice_str[3] && dice_str[3] == dice_str[4])) &&
-        (dice_str[0] == dice_str[1]
+        ((dice_str[0] == dice_str[1]
          && dice_str[1] == dice_str[2]
-         && dice_str[2] == dice_str[3]) {
+         && dice_str[2] == dice_str[3]) == false) {
             let value = dice.iter().fold(0,|a, &b| a + b);
             return Some(value);
         }
