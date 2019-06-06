@@ -266,11 +266,7 @@ fn main() {
             lines_selected[i] = 0;
             println!("{}", clear::All);
 
-            //if is_game_over(&scores) == true {
-            if 1 == 1 {
-                total = 10;
-
-
+            if is_game_over(&scores) == true {
                 let mut name = String::new();
                 loop {
                     println!("{}", clear::All);
@@ -316,7 +312,7 @@ fn main() {
                     10...99 => { if let Err(e) = writeln!(file, "{}| {} | {:?}", name,highscore_date,total) {
                         eprintln!("Couldn't write to file: {}", e); }
                     },
-                    _ => { if let Err(e) = writeln!(file, "{}| {} | {:?}", name,highscore_date,total) {
+                    _ => { if let Err(e) = writeln!(file, "{}| {} |{:?}", name,highscore_date,total) {
                         eprintln!("Couldn't write to file: {}", e); }
                     },
                 }
