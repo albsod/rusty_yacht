@@ -58,9 +58,6 @@ enum SlotSelectStatus {
 }
 
 fn main() {
-
-
-
     // Create highscore path if non-existing
     let home = dirs::home_dir().expect("No home directory!");
     let mut path = PathBuf::new();
@@ -266,67 +263,19 @@ fn main() {
             lines_selected[i] = 0;
             println!("{}", clear::All);
 
-            if is_game_over(&scores) == true {
-                let mut name = String::new();
-                loop {
-                    println!("{}", clear::All);
-                    println!("  GAME OVER");
-                    print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
-                    print_dice(&dice, &to_keep);
-                    println!("Input a name to log your score:");
-                    stdin().read_line(&mut name)
-                        .expect("Failed to read line");
-                    name.pop(); // remove trailing newline
-                    let namelen = name.len();
-                    if namelen > 25 {
-                        println!("  Too long! Max length is 25 characters.");
-                        name = String::from("");
-                    } else {
-                        let name_padding = 25 - namelen;
-                        for _ in 0..name_padding {
-                            name.push(' ');
-                        }
-                        break;
-                    }
-                }
-                let mut highscore_date = Local::now().date().to_string();
-                highscore_date.truncate(10);
-
-                let mut file = OpenOptions::new()
-                    .append(true)
-                    .open(&path)
-                    .unwrap_or_else(|error| {
-                        if error.kind() == ErrorKind::NotFound {
-                            File::create(&path).unwrap_or_else(|error| {
-                                panic!("Tried to create ~/.config/rusty-yacht/highscore.txt but there was a problem: {:?}", error);
-                            })
-                        } else {
-                            panic!("There was a problem opening the highscore file: {:?}", error);
-                        }
-                    });
-
-                match total {
-                    0...9 => { if let Err(e) = writeln!(file, "{}| {} |  {:?}", name,highscore_date,total) {
-                        eprintln!("Couldn't write to file: {}", e); }
-                    },
-                    10...99 => { if let Err(e) = writeln!(file, "{}| {} | {:?}", name,highscore_date,total) {
-                        eprintln!("Couldn't write to file: {}", e); }
-                    },
-                    _ => { if let Err(e) = writeln!(file, "{}| {} |{:?}", name,highscore_date,total) {
-                        eprintln!("Couldn't write to file: {}", e); }
-                    },
-                }
+            if is_game_over(&scores) {
+                println!("{}", clear::All);
+                println!("  GAME OVER");
+                print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
+                print_dice(&dice, &to_keep);
+                log_score(&path, &total);
                 println!("{}", clear::All);
                 print_highscore(&read_highscore(&path));
                 break;
-
             }
 
             print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
             print_dice(&dice, &to_keep);
-
-            //if is_game_over(&scores) == true {
-            //}
 
             for die in &mut dice.iter_mut() {
                 *die = rand::thread_rng().gen_range(1, 7);
@@ -590,6 +539,56 @@ fn print_score_sheet(scores: &mut [Score; 18], subtotal: &mut u8, bonus: &mut u8
     scores[17].value.replace_range(.., "   ");
 }
 
+fn log_score(path: &std::path::PathBuf, total: &u16) {
+    let mut name = String::new();
+    loop {
+        println!("Input a name to log your score:");
+        stdin().read_line(&mut name)
+            .expect("Failed to read line");
+        name.pop(); // remove trailing newline
+        let namelen = name.len();
+        if namelen < 1 {
+            ;
+        } else if namelen > 24 {
+            println!("Too long! Max length is 24 characters.\n");
+            name = String::from("");
+        } else {
+            let name_padding = 24 - namelen;
+            for _ in 0..name_padding {
+                name.push(' ');
+            }
+            break;
+        }
+    }
+    let mut date = Local::now().date().to_string();
+    date.truncate(10);
+
+    let mut file = OpenOptions::new()
+        .append(true)
+        .open(&path)
+        .unwrap_or_else(|error| {
+            if error.kind() == ErrorKind::NotFound {
+                File::create(&path).unwrap_or_else(|error| {
+                    panic!("Tried to create ~/.config/rusty-yacht/highscore.txt but there was a problem: {:?}", error);
+                })
+            } else {
+                panic!("There was a problem opening the highscore file: {:?}", error);
+            }
+        });
+
+    match total {
+        0...9 => { if let Err(e) = writeln!(file, "{}| {} |  {:?}", name, date, total) {
+            eprintln!("Couldn't write to file: {}", e); }
+        },
+        10...99 => { if let Err(e) = writeln!(file, "{}| {} | {:?}", name, date, total) {
+            eprintln!("Couldn't write to file: {}", e); }
+        },
+        _ => { if let Err(e) = writeln!(file, "{}| {} |{:?}", name, date, total) {
+            eprintln!("Couldn't write to file: {}", e); }
+        },
+    }
+}
+
 fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
     let file = File::open(&path).unwrap_or_else(|error| {
         if error.kind() == ErrorKind::NotFound {
@@ -617,7 +616,7 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
         let date_begin = l.len() - 15;
         let sc_begin = l.len() - 3;
         if name.len() > 0 {
-            let date = String::from(&l[date_begin..sc_begin-1]);
+            let date = String::from(&l[date_begin..sc_begin-2]);
             let sc = String::from(&l[sc_begin..]);
             let sc: u32 = sc.trim().parse()
                 .expect("Not a number!");
@@ -638,9 +637,9 @@ fn print_highscore(highscore: &Vec<(u32, String, String)>) {
 
     for elem in highscore {
         match elem.0 {
-            0...9   => { println!("║ {}║ {}║     {} ║", elem.2, elem.1, elem.0); },
-            10...99 => { println!("║ {}║ {}║    {} ║", elem.2, elem.1, elem.0); },
-            _       => { println!("║ {}║ {}║   {} ║", elem.2, elem.1, elem.0); },
+            0...9   => { println!("║ {} ║ {} ║     {} ║", elem.2, elem.1, elem.0); },
+            10...99 => { println!("║ {} ║ {} ║    {} ║", elem.2, elem.1, elem.0); },
+            _       => { println!("║ {} ║ {} ║   {} ║", elem.2, elem.1, elem.0); },
         }
     }
 
