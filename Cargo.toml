@@ -1,9 +1,10 @@
 [package]
 name = "rusty-yacht"
-version = "0.9.3"
+version = "0.9.4"
 authors = ["Albin Söderqvist <albin@fripost.org>"]
 
 [dependencies]
-dirs = "1.0"
+chrono = "0.4"
+dirs = "2.0"
 rand = "0.6"
 termion = "1.5"

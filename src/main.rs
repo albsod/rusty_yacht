@@ -17,16 +17,18 @@
 // You should have received a copy of the GNU General Public License    //
 // along with the game. If not, see <https://www.gnu.org/licenses/>.    //
 //                                                                      //
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
+extern crate chrono;
+extern crate dirs;
 extern crate rand;
 extern crate termion;
-extern crate dirs;
 
-use rand::Rng;
 use std::io::{Write, stdout, stdin, BufRead, BufReader, ErrorKind};
 use std::fs::*;
 use std::path::PathBuf;
+use chrono::prelude::*;
+use rand::Rng;
 use termion::clear;
 use termion::style;
 use termion::event::Key;
@@ -56,6 +58,8 @@ enum SlotSelectStatus {
 }
 
 fn main() {
+
+
 
     // Create highscore path if non-existing
     let home = dirs::home_dir().expect("No home directory!");
@@ -152,7 +156,7 @@ fn main() {
     'outer: loop {
         println!("{}", clear::All);
 
-        println!(" Press Enter to roll the dice\n or Ctrl+c at any time to exit.");
+        println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
         print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
 
         let mut all_dice_are_kept = true;
@@ -175,8 +179,8 @@ fn main() {
                 }
             }
             println!("{}", clear::All);
-            println!(" Where do you want to place your points?");
-            println!(" Use the arrow keys and press Enter to select.");
+            println!("  Where do you want to place your points?");
+            println!("  Use the arrow keys and press Enter to select.");
             loop {
                 lines_selected[i] = 1;
                 print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
@@ -185,8 +189,8 @@ fn main() {
                 match select_slot(&dice, value, &mut scores, &mut lines_selected, &mut i) {
                     SlotExit            =>   break 'outer,
                     SlotAlreadySelected => { println!("{}", clear::All);
-                                             println!(" Sorry, you can't use this slot again.");
-                                             println!(" Press Enter to continue.");
+                                             println!("  Sorry, you can't use this slot again.");
+                                             println!("  Press Enter to continue.");
                                              print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
                                              print_dice(&dice, &to_keep);
                                              let stdin = stdin();
@@ -234,7 +238,7 @@ fn main() {
                     },
 
                     SlotComplete      => { println!("{}", clear::All);
-                                           println!(" Selection complete. Press Enter to continue.");
+                                           println!("  Selection complete. Press Enter to continue.");
                                            print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
                                            print_dice(&dice, &to_keep);
                                            let stdin = stdin();
@@ -254,8 +258,8 @@ fn main() {
                     SlotIncomplete    => { println!("{}", clear::All); },
                     SlotInvalid       => {
                         println!("{}", clear::All);
-                        println!(" Invalid selection. Press - to strike it out");
-                        println!(" or an arrow key to cancel.");
+                        println!("  Invalid selection. Press - to strike it out");
+                        println!("  or an arrow key to cancel.");
                     },
                 }
             }
@@ -268,7 +272,7 @@ fn main() {
                 let mut name = String::new();
                 loop {
                     println!("{}", clear::All);
-                    println!(" GAME OVER");
+                    println!("  GAME OVER");
                     print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
                     print_dice(&dice, &to_keep);
                     println!("Input a name to log your score:");
@@ -276,17 +280,19 @@ fn main() {
                         .expect("Failed to read line");
                     name.pop(); // remove trailing newline
                     let namelen = name.len();
-                    if namelen > 27 {
-                        println!("Too long! Max length is 27 characters.");
+                    if namelen > 25 {
+                        println!("  Too long! Max length is 25 characters.");
                         name = String::from("");
                     } else {
-                        let name_padding = 27 - namelen;
+                        let name_padding = 25 - namelen;
                         for _ in 0..name_padding {
                             name.push(' ');
                         }
                         break;
                     }
                 }
+                let mut highscore_date = Local::now().date().to_string();
+                highscore_date.truncate(10);
 
                 let mut file = OpenOptions::new()
                     .append(true)
@@ -302,13 +308,13 @@ fn main() {
                     });
 
                 match total {
-                    0...9 => { if let Err(e) = writeln!(file, "{}|   {:?}", name,total) {
+                    0...9 => { if let Err(e) = writeln!(file, "{}| {} |  {:?}", name,highscore_date,total) {
                         eprintln!("Couldn't write to file: {}", e); }
                     },
-                    10...99 => { if let Err(e) = writeln!(file, "{}|  {:?}", name,total) {
+                    10...99 => { if let Err(e) = writeln!(file, "{}| {} | {:?}", name,highscore_date,total) {
                         eprintln!("Couldn't write to file: {}", e); }
                     },
-                    _ => { if let Err(e) = writeln!(file, "{}| {:?}", name,total) {
+                    _ => { if let Err(e) = writeln!(file, "{}| {} | {:?}", name,highscore_date,total) {
                         eprintln!("Couldn't write to file: {}", e); }
                     },
                 }
@@ -387,9 +393,9 @@ fn main() {
             loop {
                 println!("{}", clear::All);
                 if count == 1 {
-                    println!(" Use the arrow keys and Space to toggle which\n dice to keep. Then press Enter to reroll.");
+                    println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll.");
                 } else {
-                    println!(" Use the arrow keys and Space to toggle which\n dice to keep. Then press Enter to reroll\n for the last time.");
+                    println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll\n  for the last time.");
                 }
                 print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
                 print_dice(&dice, &to_keep);
@@ -473,120 +479,120 @@ fn print_score_sheet(scores: &mut [Score; 18], subtotal: &mut u8, bonus: &mut u8
     }
 
     println!("╔═══════════════════════════════════════════════╗");
-    println!("║RUSTY YACHT                                    ║");
+    println!("║ RUSTY YACHT                                   ║");
     println!("╠═══════════════════════════╦═══════════════════╣");
     println!("║                       Max ║             Score ║");
     println!("╟───────────────────────────╫───────────────────╢");
     if lines_selected[0] == 1 {
-        println!("║{}Ones                     5 {}║{}                {} {}║",
+        println!("║{} Ones                    5 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert,
                  scores[0].value, style::Reset);
-    } else { println!("║Ones                     5 ║                {} ║",
+    } else { println!("║ Ones                    5 ║                {} ║",
                       scores[0].value); }
     if lines_selected[1] == 1 {
-        println!("║{}Twos                    10 {}║{}                {} {}║",
+        println!("║{} Twos                   10 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[1].value, style::Reset);
     } else {
-        println!("║Twos                    10 ║                {} ║",
+        println!("║ Twos                   10 ║                {} ║",
                  scores[1].value); }
     if lines_selected[2] == 1 {
-        println!("║{}Threes                  15 {}║{}                {} {}║",
+        println!("║{} Threes                 15 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[2].value, style::Reset);
     } else {
-        println!("║Threes                  15 ║                {} ║",
+        println!("║ Threes                 15 ║                {} ║",
                  scores[2].value); }
     if lines_selected[3] == 1 {
-        println!("║{}Fours                   20 {}║{}                {} {}║",
+        println!("║{} Fours                  20 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[3].value, style::Reset);
-    } else {println!("║Fours                   20 ║                {} ║",
+    } else {println!("║ Fours                  20 ║                {} ║",
                      scores[3].value); }
     if lines_selected[4] == 1 {
-        println!("║{}Fives                   25 {}║{}                {} {}║",
+        println!("║{} Fives                  25 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[4].value, style::Reset);
     } else {
-        println!("║Fives                   25 ║                {} ║",
+        println!("║ Fives                  25 ║                {} ║",
                  scores[4].value); }
     if lines_selected[5] == 1 {
-        println!("║{}Sixes                   30 {}║{}                {} {}║",
+        println!("║{} Sixes                  30 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[5].value, style::Reset);
-    } else { println!("║Sixes                   30 ║                {} ║",
+    } else { println!("║ Sixes                  30 ║                {} ║",
                       scores[5].value); }
     println!("╟───────────────────────────╫───────────────────╢");
     if lines_selected[16] == 1 {
-        println!("║{}Sum                105 {}║{}                    {} {}║",
+        println!("║{} Sum                105 {}║{}                    {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[16].value, style::Reset);
-    } else { println!("║Sum                    105 ║               {} ║",
+    } else { println!("║ Sum                   105 ║               {} ║",
                       scores[16].value); }
-    println!("║Bonus                   50 ║                {} ║", scores[15].value);
+    println!("║ Bonus                  50 ║                {} ║", scores[15].value);
   //println!("╟───────────────────────────╫───────────────────╢");
     if lines_selected[6] == 1 {
-        println!("║{}One Pair                12 {}║{}                {} {}║",
+        println!("║{} One Pair               12 {}║{}                {} {}║",
              style::Invert, style::Reset, style::Invert, scores[6].value, style::Reset);
-    } else { println!("║One Pair                12 ║                {} ║",
+    } else { println!("║ One Pair               12 ║                {} ║",
                       scores[6].value); }
     if lines_selected[7] == 1 {
-        println!("║{}Two Pairs               22 {}║{}                {} {}║",
+        println!("║{} Two Pairs              22 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[7].value, style::Reset);
     } else {
-        println!("║Two Pairs               22 ║                {} ║",
+        println!("║ Two Pairs              22 ║                {} ║",
                  scores[7].value); }
     if lines_selected[8] == 1 {
-        println!("║{}Three of a Kind         18 {}║{}                {} {}║",
+        println!("║{} Three of a Kind        18 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[8].value, style::Reset);
     } else {
-        println!("║Three of a Kind         18 ║                {} ║",
+        println!("║ Three of a Kind        18 ║                {} ║",
                  scores[8].value);
     }
     if lines_selected[9] == 1 {
-        println!("║{}Four of a Kind          24 {}║{}                {} {}║",
+        println!("║{} Four of a Kind         24 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[9].value, style::Reset);
     } else {
-        println!("║Four of a Kind          24 ║                {} ║",
+        println!("║ Four of a Kind         24 ║                {} ║",
                  scores[9].value);
     }
     if lines_selected[10] == 1 {
-        println!("║{}Small Straight          15 {}║{}                {} {}║",
+        println!("║{} Small Straight         15 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[10].value, style::Reset);
     } else {
-        println!("║Small Straight          15 ║                {} ║",
+        println!("║ Small Straight         15 ║                {} ║",
                  scores[10].value);
     }
     if lines_selected[11] == 1 {
-        println!("║{}Large Straight          20 {}║{}                {} {}║",
+        println!("║{} Large Straight         20 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[11].value, style::Reset);
     } else {
-        println!("║Large Straight          20 ║                {} ║",
+        println!("║ Large Straight         20 ║                {} ║",
                  scores[11].value);
     }
     if lines_selected[12] == 1 {
-        println!("║{}Full House              28 {}║{}                {} {}║",
+        println!("║{} Full House             28 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[12].value, style::Reset);
     } else {
-        println!("║Full House              28 ║                {} ║",
+        println!("║ Full House             28 ║                {} ║",
                  scores[12].value);
     }
     if lines_selected[13] == 1 {
-        println!("║{}Chance                  30 {}║{}                {} {}║",
+        println!("║{} Chance                 30 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[13].value, style::Reset);
     } else {
-        println!("║Chance                  30 ║                {} ║",
+        println!("║ Chance                 30 ║                {} ║",
                  scores[13].value);
     }
     if lines_selected[14] == 1 {
-        println!("║{}Yatzy                   50 {}║{}                {} {}║",
+        println!("║{} Yatzy                  50 {}║{}                {} {}║",
                  style::Invert, style::Reset, style::Invert, scores[14].value, style::Reset);
     } else {
-        println!("║Yatzy                   50 ║                {} ║",
+        println!("║ Yatzy                  50 ║                {} ║",
                  scores[14].value);
     }
     println!("╟───────────────────────────╫───────────────────╢");
-    println!("║Total                  374 ║               {} ║", scores[17].value);
+    println!("║ Total                 374 ║               {} ║", scores[17].value);
     println!("╚═══════════════════════════╩═══════════════════╝");
 
     scores[17].value.replace_range(.., "   ");
 }
 
-fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String)> {
+fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
     let file = File::open(&path).unwrap_or_else(|error| {
         if error.kind() == ErrorKind::NotFound {
             File::create(&path).unwrap_or_else(|error| {
@@ -610,12 +616,14 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String)> {
             }
             name.push(c);
         }
+        let date_begin = l.len() - 15;
         let sc_begin = l.len() - 3;
         if name.len() > 0 {
+            let date = String::from(&l[date_begin..sc_begin-1]);
             let mut sc = String::from(&l[sc_begin..]);
             let sc: u32 = sc.trim().parse()
                 .expect("Not a number!");
-            highscore.push((sc, name));
+            highscore.push((sc, date, name));
             highscore.sort();
             highscore.reverse();
         }
@@ -623,22 +631,22 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String)> {
     highscore
 }
 
-fn print_highscore(highscore: &Vec<(u32, String)>) {
+fn print_highscore(highscore: &Vec<(u32, String, String)>) {
     println!("╔═══════════════════════════════════════════════╗");
-    println!("║HIGH SCORE                                     ║");
-    println!("╠═══════════════════════════╦═══════════════════╣");
-    println!("║Name                       ║             Score ║");
-    println!("╟───────────────────────────╫───────────────────╢");
+    println!("║ HIGH SCORE                                    ║");
+    println!("╠══════════════════════════╦════════════╦═══════╣");
+    println!("║ Name                     ║ Date       ║ Score ║");
+    println!("╟──────────────────────────╫────────────╫───────╢");
 
     for elem in highscore {
         match elem.0 {
-            0...9   => { println!("║{}║                 {} ║", elem.1, elem.0); },
-            10...99 => { println!("║{}║                {} ║", elem.1, elem.0); },
-            _       => { println!("║{}║               {} ║", elem.1, elem.0); },
+            0...9   => { println!("║ {}║ {}║     {} ║", elem.2, elem.1, elem.0); },
+            10...99 => { println!("║ {}║ {}║    {} ║", elem.2, elem.1, elem.0); },
+            _       => { println!("║ {}║ {}║   {} ║", elem.2, elem.1, elem.0); },
         }
     }
 
-    println!("╚═══════════════════════════╩═══════════════════╝");
+    println!("╚══════════════════════════╩════════════╩═══════╝");
 }
 
 fn print_dice(dice: &[usize; 5], to_keep: &[usize; 5]) {
