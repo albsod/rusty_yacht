@@ -266,7 +266,9 @@ fn main() {
             lines_selected[i] = 0;
             println!("{}", clear::All);
 
-            if is_game_over(&scores) == true {
+            //if is_game_over(&scores) == true {
+            if 1 == 1 {
+                total = 10;
 
 
                 let mut name = String::new();
@@ -620,7 +622,7 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
         let sc_begin = l.len() - 3;
         if name.len() > 0 {
             let date = String::from(&l[date_begin..sc_begin-1]);
-            let mut sc = String::from(&l[sc_begin..]);
+            let sc = String::from(&l[sc_begin..]);
             let sc: u32 = sc.trim().parse()
                 .expect("Not a number!");
             highscore.push((sc, date, name));
