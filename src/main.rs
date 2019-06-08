@@ -614,13 +614,13 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
             name.push(c);
         }
         let date_begin = l.len() - 15;
-        let sc_begin = l.len() - 3;
+        let score_begin = l.len() - 3;
         if name.len() > 0 {
-            let date = String::from(&l[date_begin..sc_begin-2]);
-            let sc = String::from(&l[sc_begin..]);
-            let sc: u32 = sc.trim().parse()
+            let date = String::from(&l[date_begin..score_begin-2]);
+            let score = String::from(&l[score_begin..]);
+            let score: u32 = score.trim().parse()
                 .expect("Not a number!");
-            highscore.push((sc, date, name));
+            highscore.push((score, date, name));
             highscore.sort();
             highscore.reverse();
         }
@@ -630,7 +630,7 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
 
 fn print_highscore(highscore: &Vec<(u32, String, String)>) {
     println!("╔═══════════════════════════════════════════════╗");
-    println!("║ HIGH SCORE                                    ║");
+    println!("║ HIGH-SCORE TABLE                              ║");
     println!("╠══════════════════════════╦════════════╦═══════╣");
     println!("║ Name                     ║ Date       ║ Score ║");
     println!("╟──────────────────────────╫────────────╫───────╢");
@@ -641,7 +641,7 @@ fn print_highscore(highscore: &Vec<(u32, String, String)>) {
             10...99 => { println!("║ {} ║ {} ║    {} ║", elem.2, elem.1, elem.0); },
             _       => { println!("║ {} ║ {} ║   {} ║", elem.2, elem.1, elem.0); },
         }
-    }
+     }
 
     println!("╚══════════════════════════╩════════════╩═══════╝");
 }
