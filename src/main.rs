@@ -546,7 +546,7 @@ fn log_score(path: &std::path::PathBuf, total: &u16) {
         stdin().read_line(&mut name)
             .expect("Failed to read line");
         name.pop(); // remove trailing newline
-        let namelen = name.len();
+        let namelen = name.chars().count();
         if namelen < 1 {
             ;
         } else if namelen > 24 {
@@ -602,7 +602,7 @@ fn read_highscore(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
     let file = BufReader::new(file);
     let mut highscore = Vec::new();
     for line in file.lines() {
-        let mut l = line.unwrap();
+        let l = line.unwrap();
         let mut name = String::new();
         for c in l.chars() {
             if c == '#' {

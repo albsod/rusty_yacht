@@ -73,8 +73,8 @@ Copying conditions
 
 Rusty Yacht: GNU GPL version 3 or, at your option, any later version
 This README: Creative Commons Attribution-ShareAlike 3.0 Unported License
-Chrono library <https://crates.io/crates/chrono>: Apache-2.0 or MIT/X11 
-Dirs library <https://crates.io/crates/dirs>: Apache-2.0 or MIT/X11 
-Random library <https://crates.io/crates/rand>: Apache-2.0 or MIT/X11 
+Chrono library <https://crates.io/crates/chrono>: Apache-2.0 or MIT/X11
+Dirs library <https://crates.io/crates/dirs>: Apache-2.0 or MIT/X11
+Random library <https://crates.io/crates/rand>: Apache-2.0 or MIT/X11
 Termion library <https://crates.io/crates/termion>: MIT/X11
 The Rust Programming language <https://rust-lang.org>: Apache-2.0 or MIT/X11

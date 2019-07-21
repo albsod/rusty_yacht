@@ -1,6 +1,6 @@
 [package]
 name = "rusty-yacht"
-version = "0.9.4"
+version = "0.9.5"
 authors = ["Albin Söderqvist <albin@fripost.org>"]
 
 [dependencies]
