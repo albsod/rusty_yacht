@@ -53,9 +53,9 @@ pub struct Scoring;
 
 impl Scoring {
     pub fn new() -> [fn(&[usize; 5]) -> Option<usize>; 15] {
-        fn ones(dice: &[usize; 5]) -> Option<usize> {
+        fn ones(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
-            for i in dice {
+            for i in current {
                 if i == &1 {
                     value += i;
                 }
@@ -66,9 +66,9 @@ impl Scoring {
             None
         }
 
-        fn twos(dice: &[usize; 5]) -> Option<usize> {
+        fn twos(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
-            for i in dice {
+            for i in current {
                 if i == &2 {
                     value += i;
                 }
@@ -80,9 +80,9 @@ impl Scoring {
             None
         }
 
-        fn threes(dice: &[usize; 5]) -> Option<usize> {
+        fn threes(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
-            for i in dice {
+            for i in current {
                 if i == &3 {
                     value += i;
                 }
@@ -94,9 +94,9 @@ impl Scoring {
             None
         }
 
-        fn fours(dice: &[usize; 5]) -> Option<usize> {
+        fn fours(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
-            for i in dice {
+            for i in current {
                 if i == &4 {
                     value += i;
                 }
@@ -108,9 +108,9 @@ impl Scoring {
             None
         }
 
-        fn fives(dice: &[usize; 5]) -> Option<usize> {
+        fn fives(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
-            for i in dice {
+            for i in current {
                 if i == &5 {
                     value += i;
                 }
@@ -121,9 +121,9 @@ impl Scoring {
             None
         }
 
-        fn sixes(dice: &[usize; 5]) -> Option<usize> {
+        fn sixes(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
-            for i in dice {
+            for i in current {
                 if i == &6 {
                     value += i;
                 }
@@ -134,8 +134,8 @@ impl Scoring {
             None
         }
 
-        fn one_pair(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn one_pair(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             let mut value: usize = 0;
             if dice_str[0] == dice_str[1] {
@@ -164,8 +164,8 @@ impl Scoring {
             None
         }
 
-        fn two_pairs(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn two_pairs(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             let mut value_fst: usize = 0;
             let mut value_snd: usize = 0;
@@ -188,8 +188,8 @@ impl Scoring {
             None
         }
 
-        fn three_kind(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn three_kind(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             let mut value: usize = 0;
             if dice_str[0] == dice_str[1] && dice_str[1] == dice_str[2] {
@@ -219,8 +219,8 @@ impl Scoring {
             None
         }
 
-        fn four_kind(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn four_kind(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             let mut value: usize = 0;
             if dice_str[0] == dice_str[1] &&
@@ -245,8 +245,8 @@ impl Scoring {
             None
         }
 
-        fn small_str(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn small_str(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             if dice_str[0] == 1 &&
                 dice_str[1] == 2 &&
@@ -258,8 +258,8 @@ impl Scoring {
             None
         }
 
-        fn large_str(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn large_str(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             if dice_str[0] == 2 &&
                 dice_str[1] == 3 &&
@@ -271,8 +271,8 @@ impl Scoring {
             None
         }
 
-        fn full_house(dice: &[usize; 5]) -> Option<usize> {
-            let mut dice_str: [usize; 5] = dice.clone();
+        fn full_house(current: &[usize; 5]) -> Option<usize> {
+            let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
             if ((dice_str[0] == dice_str[1] && dice_str[1] == dice_str[2]) &&
                 (dice_str[3] == dice_str[4])) ||
@@ -281,29 +281,29 @@ impl Scoring {
                 ((dice_str[0] == dice_str[1]
                   && dice_str[1] == dice_str[2]
                   && dice_str[2] == dice_str[3]) == false) {
-                    let value = dice.iter().fold(0,|a, &b| a + b);
+                    let value = current.iter().fold(0,|a, &b| a + b);
                     return Some(value);
                 }
             None
         }
 
-        fn chance(dice: &[usize; 5]) -> Option<usize> {
-            let value = dice.iter().fold(0,|a, &b| a + b);
+        fn chance(current: &[usize; 5]) -> Option<usize> {
+            let value = current.iter().fold(0,|a, &b| a + b);
             Some(value)
         }
 
-        fn yatzy(dice: &[usize; 5]) -> Option<usize> {
-            for (i, &_item) in dice.iter().enumerate() {
-                if dice[i] != dice[0] {
+        fn yatzy(current: &[usize; 5]) -> Option<usize> {
+            for (i, &_item) in current.iter().enumerate() {
+                if current[i] != current[0] {
                     return None;
                 }
             }
             Some(50)
         }
 
-        return [ones, twos, threes, fours, fives, sixes, one_pair,
-                two_pairs, three_kind, four_kind, small_str,
-                large_str, full_house, chance, yatzy];
+        [ones, twos, threes, fours, fives, sixes, one_pair,
+         two_pairs, three_kind, four_kind, small_str,
+         large_str, full_house, chance, yatzy]
     }
 }
 
@@ -392,34 +392,27 @@ pub fn is_game_over(scores: &[Score; 18]) -> bool {
     true
 }
 
-pub fn print_score_sheet(scores: &mut [Score; 18], subtotal: &mut u8, bonus: &mut u8, total: &mut u16, lines_selected: &[u8]) {
-    if subtotal != &mut 0 {
-        *subtotal = 0;
-    }
-    if bonus != &mut 0 {
-        *bonus = 0;
-    }
-    if total != &mut 0 {
-        *total = 0;
-    }
+pub fn print_score_sheet(scores: &mut [Score; 18], lines_selected: &[u8]) {
+    let mut subtotal: u8 = 0;
+    let mut total: u16 = 0;
 
     for elm in scores.iter() {
         if elm.name == "One Pair" {
             break;
         } else if elm.value != "  " && elm.value != "   " && elm.value != " –" {
-            *subtotal += elm.value.trim().parse::<u8>().unwrap();
+            subtotal += elm.value.trim().parse::<u8>().unwrap();
         }
     }
 
-    if *subtotal > 99 {
+    if subtotal > 99 {
         scores[16].value.replace_range(.., &subtotal.to_string());
-    } else if *subtotal > 9 {
+    } else if subtotal > 9 {
         scores[16].value.replace_range(1.., &subtotal.to_string());
-    } else if *subtotal > 0 {
+    } else if subtotal > 0 {
         scores[16].value.replace_range(2.., &subtotal.to_string());
     }
 
-    if *subtotal > 62 {
+    if subtotal > 62 {
         scores[15].value.replace_range(.., "50");
     } else if
         scores[0].value != "  " &&
@@ -437,15 +430,15 @@ pub fn print_score_sheet(scores: &mut [Score; 18], subtotal: &mut u8, bonus: &mu
             elm.value != "   " &&
             elm.value != " –" &&
             elm.name != "Sum" {
-                *total += elm.value.trim().parse::<u16>().unwrap();
+                total += elm.value.trim().parse::<u16>().unwrap();
             }
     }
 
-    if *total > 99 {
+    if total > 99 {
         scores[17].value.replace_range(.., &total.to_string());
-    } else if *total > 9 {
+    } else if total > 9 {
         scores[17].value.replace_range(1.., &total.to_string());
-    } else if *total > 0 {
+    } else if total > 0 {
         scores[17].value.replace_range(2.., &total.to_string());
     }
 
@@ -636,7 +629,7 @@ impl Highscore {
         println!("╚══════════════════════════╩════════════╩═══════╝");
     }
 
-    pub fn log(path: &std::path::PathBuf, total: &u16) {
+    pub fn log(path: &std::path::PathBuf, scores: [Score; 18]) {
         let mut name = String::new();
         loop {
             println!("Input a name to log your score:");
@@ -672,7 +665,17 @@ impl Highscore {
                     panic!("There was a problem opening the highscore file: {:?}", error);
                 }
             });
+        let mut total: u16 = 0;
 
+        for elm in scores.iter() {
+            if elm.value != "  " &&
+                elm.value != "   " &&
+                elm.value != " –" &&
+                elm.name != "Sum" {
+                    total += elm.value.trim().parse::<u16>().unwrap();
+                }
+        }
+        
         match total {
             0..=9 => { if let Err(e) = writeln!(file, "{}| {} |  {:?}", name, date, total) {
                 eprintln!("Couldn't write to file: {}", e); }
@@ -689,20 +692,36 @@ impl Highscore {
 
 }
 
-pub struct Dice;
+pub struct Dice {
+    pub current: [usize; 5],
+    pub to_keep: [usize; 5],
+}
 
 impl Dice {
-    pub fn new() -> [usize; 5] {
-        [0,0,0,0,0]
+    pub fn new() -> Dice {
+        Dice {
+            current: [0,0,0,0,0],
+            to_keep: [0,0,0,0,0],
+        }
     }
 
-    pub fn print(dice: &[usize; 5], to_keep: &[usize; 5]) {
+    pub fn keep_all(dice: &Dice) -> bool {
+        for &i in dice.to_keep.iter() {
+            if i == 0 {
+                return false
+            }
+        }
+        true
+    }
+
+    
+    pub fn print(dice: &Dice) {
         let mut dot: [[char; 15]; 3] = [[' '; 15]; 3];
 
-        for (i, item) in dice.iter().enumerate() {
+        for (i, item) in dice.current.iter().enumerate() {
             match item {
                 1 => {
-                    if to_keep[i] > 0 {
+                    if dice.to_keep[i] > 0 {
                         match i {
                             0 => dot[1][1] = '●',
                             1 => dot[1][4] = '●',
@@ -721,7 +740,7 @@ impl Dice {
                     }
                 },
                 2 => {
-                    if to_keep[i] > 0 {
+                    if dice.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][1] = '●';
                                    dot[2][0] = '●'; },
@@ -750,7 +769,7 @@ impl Dice {
                     }
                 },
                 3 => {
-                    if to_keep[i] > 0 {
+                    if dice.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][1] = '●';
                                    dot[1][1] = '●';
@@ -789,7 +808,7 @@ impl Dice {
                     }
                 },
                 4 => {
-                    if to_keep[i] > 0 {
+                    if dice.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][0] = '●';
                                    dot[0][1] = '●';
@@ -838,7 +857,7 @@ impl Dice {
                     }
                 },
                 5 => {
-                    if to_keep[i] > 0 {
+                    if dice.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][0] = '●';
                                    dot[0][1] = '●';
@@ -897,7 +916,7 @@ impl Dice {
                     }
                 },
                 _ => {
-                    if to_keep[i] > 0 {
+                    if dice.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][0] = '●';
                                    dot[0][1] = '●';
@@ -982,8 +1001,7 @@ impl Dice {
         println!("╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝");
     }
 
-    pub fn select(dice: &[usize; 5],
-                  to_keep: &mut [usize; 5],
+    pub fn select(dice: &mut Dice,
                   left_margin: &mut String,
                   margin_width: &mut usize,
                   selected: &mut [usize; 5]) -> DiceSelectStatus {
@@ -1014,12 +1032,12 @@ impl Dice {
                 Key::Char('\n') => { selected[*margin_width] = 1;
                                      return DiceComplete;},
                 Key::Char(' ')  => { println!("{}●━━━━━━━●{}", *left_margin, termion::cursor::Goto(1, bottom_line -4));
-                                     if selected[*margin_width] == 0 && to_keep[*margin_width] == 0 {
-                                         to_keep[*margin_width] = dice[*margin_width];
+                                     if selected[*margin_width] == 0 && dice.to_keep[*margin_width] == 0 {
+                                         dice.to_keep[*margin_width] = dice.current[*margin_width];
                                          selected[*margin_width] = 1;
                                          return DiceIncomplete;
                                      } else {
-                                         to_keep[*margin_width] = 0;
+                                         dice.to_keep[*margin_width] = 0;
                                          selected[*margin_width] = 0;
                                          return DiceIncomplete;
                                      } },
@@ -1088,8 +1106,8 @@ impl Dice {
     }
 }
 
-fn select_slot(dice: &[usize; 5],
-                   scoring_rules: [fn(&[usize; 5]) -> Option<usize>; 15],
+fn select_slot(dice: &Dice,
+                   validators: [fn(&[usize; 5]) -> Option<usize>; 15],
                    scores: &mut [Score],
                    lines_selected: &mut [u8],
                    i: &mut usize) -> SlotSelectStatus {
@@ -1108,12 +1126,12 @@ fn select_slot(dice: &[usize; 5],
             Key::Ctrl(c) => { if c == 'c' { return SlotExit; } },
             Key::Char('\n') => { if scores[*i].value != "  ".to_string()
                                  { return SlotAlreadySelected;
-                                 } else if scoring_rules[*i](dice) != None {
-                                     println!("scoring_rules[*i](dice) != None");
-                                     if scoring_rules[*i](dice).unwrap() > 9 {
-                                         scores[*i].value.replace_range(.., &scoring_rules[*i](&dice).unwrap().to_string());
+                                 } else if validators[*i](&dice.current) != None {
+                                     println!("validators[*i](dice) != None");
+                                     if validators[*i](&dice.current).unwrap() > 9 {
+                                         scores[*i].value.replace_range(.., &validators[*i](&dice.current).unwrap().to_string());
                                      } else {
-                                         scores[*i].value.replace_range(1.., &scoring_rules[*i](&dice).unwrap().to_string());
+                                         scores[*i].value.replace_range(1.., &validators[*i](&dice.current).unwrap().to_string());
                                      }
                                      scores[*i].selected = true;
                                      stdout.flush().unwrap();
@@ -1190,23 +1208,23 @@ fn select_slot(dice: &[usize; 5],
     SlotIncomplete
 }
 
-pub fn place_points(mut scores: &mut [Score; 18], scoring_rules: [fn(&[usize; 5]) -> Option<usize>; 15],
-                    mut subtotal: &mut u8, mut bonus: &mut u8, mut total: &mut u16, mut lines_selected: &mut [u8],
-                    dice: &[usize; 5], to_keep: &[usize; 5], lp: &mut bool) {
+pub fn place_points(mut scores: &mut [Score; 18],
+                    validators: [fn(&[usize; 5]) -> Option<usize>; 15],
+                    mut lines_selected: &mut [u8], dice: &Dice, lp: &mut bool) {
     let mut i = 0 as usize;
     loop {
         lines_selected[i] = 1;
-        print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
-        Dice::print(&dice, &to_keep);
+        print_score_sheet(&mut scores, &lines_selected);
+        Dice::print(&dice);
 
-        match select_slot(&dice, scoring_rules, scores, &mut lines_selected, &mut i) {
+        match select_slot(&dice, validators, scores, &mut lines_selected, &mut i) {
             SlotExit            => { *lp = false;
                                       break;},
             SlotAlreadySelected => { println!("{}", clear::All);
                                      println!("  Sorry, you can't use this slot again.");
                                      println!("  Press Enter to continue.");
-                                     print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
-                                     Dice::print(&dice, &to_keep);
+                                     print_score_sheet(&mut scores, &lines_selected);
+                                     Dice::print(&dice);
                                      let stdin = stdin();
                                      let mut stdout = stdout().into_raw_mode().unwrap();
                                      write!(stdout, "{}", termion::cursor::Hide).unwrap();
@@ -1254,8 +1272,8 @@ pub fn place_points(mut scores: &mut [Score; 18], scoring_rules: [fn(&[usize; 5]
 
             SlotComplete      => { println!("{}", clear::All);
                                    println!("  Selection complete. Press Enter to continue.");
-                                   print_score_sheet(&mut scores, &mut subtotal, &mut bonus, &mut total, &lines_selected);
-                                   Dice::print(&dice, &to_keep);
+                                   print_score_sheet(&mut scores, &lines_selected);
+                                   Dice::print(&dice);
                                    let stdin = stdin();
                                    let mut stdout = stdout().into_raw_mode().unwrap();
                                    write!(stdout, "{}", termion::cursor::Hide).unwrap();
