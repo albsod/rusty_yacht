@@ -20,8 +20,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 extern crate chrono;
+extern crate rand;
 extern crate termion;
 
+use rand::Rng;
 use std::io::{Write, stdout, stdin, BufRead, BufReader, ErrorKind};
 use std::fs::*;
 use std::fs::create_dir_all;
@@ -32,26 +34,24 @@ use termion::event::Key;
 use termion::raw::IntoRawMode;
 use termion::style;
 use termion::input::TermRead;
-use DiceSelectStatus::*;
-use SlotSelectStatus::*;
 
 pub enum DiceSelectStatus {
-    DiceComplete,
-    DiceExit,
-    DiceIncomplete,
+    Complete,
+    Exit,
+    Incomplete,
 }
 
 pub enum SlotSelectStatus {
-    SlotAlreadySelected,
-    SlotExit,
-    SlotInvalid,
-    SlotComplete,
-    SlotIncomplete,
+    AlreadySelected,
+    Exit,
+    Invalid,
+    Complete,
+    Incomplete,
 }
 
-pub struct Scoring;
+pub struct ScoreValidator;
 
-impl Scoring {
+impl ScoreValidator {
     pub fn new() -> [fn(&[usize; 5]) -> Option<usize>; 15] {
         fn ones(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
@@ -372,12 +372,271 @@ impl Score {
         };
 
         // Return the score values as an array
-        return [score_ones, score_twos, score_threes, score_fours,
-                score_fives, score_sixes, score_one_pair, score_two_pairs,
-                score_three_kind, score_four_kind, score_small_str,
-                score_large_str, score_full_house, score_chance,
-                score_yatzy, score_bonus, score_subtotal, score_total];
+        [score_ones, score_twos, score_threes, score_fours,
+         score_fives, score_sixes, score_one_pair, score_two_pairs,
+         score_three_kind, score_four_kind, score_small_str,
+         score_large_str, score_full_house, score_chance,
+         score_yatzy, score_bonus, score_subtotal, score_total]
     }
+
+    pub fn print(scores: &mut [Score; 18], lines_selected: &[u8]) {
+        let mut subtotal: u8 = 0;
+        let mut total: u16 = 0;
+
+        for elm in scores.iter() {
+            if elm.name == "One Pair" {
+                break;
+            } else if elm.value != "  " && elm.value != "   " && elm.value != " –" {
+                subtotal += elm.value.trim().parse::<u8>().unwrap();
+            }
+        }
+
+        if subtotal > 99 {
+            scores[16].value.replace_range(.., &subtotal.to_string());
+        } else if subtotal > 9 {
+            scores[16].value.replace_range(1.., &subtotal.to_string());
+        } else if subtotal > 0 {
+            scores[16].value.replace_range(2.., &subtotal.to_string());
+        }
+
+        if subtotal > 62 {
+            scores[15].value.replace_range(.., "50");
+        } else if
+            scores[0].value != "  " &&
+            scores[1].value != "  " &&
+            scores[2].value != "  " &&
+            scores[3].value != "  " &&
+            scores[4].value != "  " &&
+            scores[5].value != "  "
+        {
+            scores[15].value.replace_range(1.., "–");
+        }
+
+        for elm in scores.iter() {
+            if elm.value != "  " &&
+                elm.value != "   " &&
+                elm.value != " –" &&
+                elm.name != "Sum" {
+                    total += elm.value.trim().parse::<u16>().unwrap();
+                }
+        }
+
+        if total > 99 {
+            scores[17].value.replace_range(.., &total.to_string());
+        } else if total > 9 {
+            scores[17].value.replace_range(1.., &total.to_string());
+        } else if total > 0 {
+            scores[17].value.replace_range(2.., &total.to_string());
+        }
+
+        println!("╔═══════════════════════════════════════════════╗");
+        println!("║ RUSTY YACHT                                   ║");
+        println!("╠═══════════════════════════╦═══════════════════╣");
+        println!("║                       Max ║             Score ║");
+        println!("╟───────────────────────────╫───────────────────╢");
+        if lines_selected[0] == 1 {
+            println!("║{} Ones                    5 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert,
+                     scores[0].value, style::Reset);
+        } else { println!("║ Ones                    5 ║                {} ║",
+                          scores[0].value); }
+        if lines_selected[1] == 1 {
+            println!("║{} Twos                   10 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[1].value, style::Reset);
+        } else {
+            println!("║ Twos                   10 ║                {} ║",
+                     scores[1].value); }
+        if lines_selected[2] == 1 {
+            println!("║{} Threes                 15 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[2].value, style::Reset);
+        } else {
+            println!("║ Threes                 15 ║                {} ║",
+                     scores[2].value); }
+        if lines_selected[3] == 1 {
+            println!("║{} Fours                  20 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[3].value, style::Reset);
+        } else {println!("║ Fours                  20 ║                {} ║",
+                         scores[3].value); }
+        if lines_selected[4] == 1 {
+            println!("║{} Fives                  25 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[4].value, style::Reset);
+        } else {
+            println!("║ Fives                  25 ║                {} ║",
+                     scores[4].value); }
+        if lines_selected[5] == 1 {
+            println!("║{} Sixes                  30 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[5].value, style::Reset);
+        } else { println!("║ Sixes                  30 ║                {} ║",
+                          scores[5].value); }
+        println!("╟───────────────────────────╫───────────────────╢");
+        if lines_selected[16] == 1 {
+            println!("║{} Sum                105 {}║{}                    {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[16].value, style::Reset);
+        } else { println!("║ Sum                   105 ║               {} ║",
+                          scores[16].value); }
+        println!("║ Bonus                  50 ║                {} ║", scores[15].value);
+        //println!("╟───────────────────────────╫───────────────────╢");
+        if lines_selected[6] == 1 {
+            println!("║{} One Pair               12 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[6].value, style::Reset);
+        } else { println!("║ One Pair               12 ║                {} ║",
+                          scores[6].value); }
+        if lines_selected[7] == 1 {
+            println!("║{} Two Pairs              22 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[7].value, style::Reset);
+        } else {
+            println!("║ Two Pairs              22 ║                {} ║",
+                     scores[7].value); }
+        if lines_selected[8] == 1 {
+            println!("║{} Three of a Kind        18 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[8].value, style::Reset);
+        } else {
+            println!("║ Three of a Kind        18 ║                {} ║",
+                     scores[8].value);
+        }
+        if lines_selected[9] == 1 {
+            println!("║{} Four of a Kind         24 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[9].value, style::Reset);
+        } else {
+            println!("║ Four of a Kind         24 ║                {} ║",
+                     scores[9].value);
+        }
+        if lines_selected[10] == 1 {
+            println!("║{} Small Straight         15 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[10].value, style::Reset);
+        } else {
+            println!("║ Small Straight         15 ║                {} ║",
+                     scores[10].value);
+        }
+        if lines_selected[11] == 1 {
+            println!("║{} Large Straight         20 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[11].value, style::Reset);
+        } else {
+            println!("║ Large Straight         20 ║                {} ║",
+                     scores[11].value);
+        }
+        if lines_selected[12] == 1 {
+            println!("║{} Full House             28 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[12].value, style::Reset);
+        } else {
+            println!("║ Full House             28 ║                {} ║",
+                     scores[12].value);
+        }
+        if lines_selected[13] == 1 {
+            println!("║{} Chance                 30 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[13].value, style::Reset);
+        } else {
+            println!("║ Chance                 30 ║                {} ║",
+                     scores[13].value);
+        }
+        if lines_selected[14] == 1 {
+            println!("║{} Yatzy                  50 {}║{}                {} {}║",
+                     style::Invert, style::Reset, style::Invert, scores[14].value, style::Reset);
+        } else {
+            println!("║ Yatzy                  50 ║                {} ║",
+                     scores[14].value);
+        }
+        println!("╟───────────────────────────╫───────────────────╢");
+        println!("║ Total                 374 ║               {} ║", scores[17].value);
+        println!("╚═══════════════════════════╩═══════════════════╝");
+
+        scores[17].value.replace_range(.., "   ");
+    }
+
+    pub fn place_points(mut scores: &mut [Score; 18],
+                        validators: [fn(&[usize; 5]) -> Option<usize>; 15],
+                        mut lines_selected: &mut [u8], dice: &Dice, lp: &mut bool) {
+        let mut i = 0 as usize;
+        loop {
+            lines_selected[i] = 1;
+            Score::print(&mut scores, &lines_selected);
+            Dice::print(&dice);
+
+            match select_slot(&dice, validators, scores, &mut lines_selected, &mut i) {
+                SlotSelectStatus::Exit => { *lp = false;
+                                             break;},
+                SlotSelectStatus::AlreadySelected => { println!("{}", clear::All);
+                                                       println!("  Sorry, you can't use this slot again.");
+                                                       println!("  Press Enter to continue.");
+                                                       Score::print(&mut scores, &lines_selected);
+                                                       Dice::print(&dice);
+                                                       let stdin = stdin();
+                                                       let mut stdout = stdout().into_raw_mode().unwrap();
+                                                       write!(stdout, "{}", termion::cursor::Hide).unwrap();
+                                                       for c in stdin.keys() {
+                                                           match c.unwrap() {
+                                                               Key::Ctrl(c) => if c == 'c' {
+                                                                   *lp = false;
+                                                                   break;
+                                                               },
+                                                               Key::Char('\n') => {
+                                                                   println!("{}", clear::All);
+                                                                   break;
+                                                               },
+                                                               Key::Up => {
+                                                                   if i != 0 {
+                                                                       i -= 1;
+                                                                       lines_selected[i+1] = 0;
+                                                                   } else {
+                                                                       i = 14;
+                                                                       lines_selected[0] = 0;
+                                                                   }
+                                                                   lines_selected[i] = 1;
+                                                                   println!("{}", clear::All);
+                                                                   break;
+                                                               },
+                                                               Key::Down => {
+                                                                   if i != 14 {
+                                                                       i += 1;
+                                                                       lines_selected[i-1] = 0;
+                                                                   } else {
+                                                                       i = 0;
+                                                                       lines_selected[14] = 0;
+                                                                   }
+                                                                   lines_selected[i] = 1;
+                                                                   println!("{}", clear::All);
+                                                                   break;
+                                                               },
+                                                               _ => { println!("{}", clear::All);
+                                                                      continue;
+                                                               }
+                                                           }
+                                                       }
+                                                       stdout.flush().unwrap();
+                },
+
+                SlotSelectStatus::Complete  => { println!("{}", clear::All);
+                                                 println!("  Selection complete. Press Enter to continue.");
+                                                 Score::print(&mut scores, &lines_selected);
+                                                 Dice::print(&dice);
+                                                 let stdin = stdin();
+                                                 let mut stdout = stdout().into_raw_mode().unwrap();
+                                                 write!(stdout, "{}", termion::cursor::Hide).unwrap();
+                                                 for c in stdin.keys() {
+                                                     match c.unwrap() {
+                                                         Key::Ctrl(c) => if c == 'c' {
+                                                             *lp = false;
+                                                             break;
+                                                         },
+                                                         Key::Char('\n') => break,
+                                                         _ => continue,
+                                                     }
+                                                 }
+                                                 stdout.flush().unwrap();
+                                                 break; },
+                SlotSelectStatus::Incomplete => { println!("{}", clear::All); },
+                SlotSelectStatus::Invalid => {
+                    println!("{}", clear::All);
+                    println!("  Invalid selection. Press - to strike it out");
+                    println!("  or an arrow key to cancel.");
+                },
+            }
+        }
+        lines_selected[i] = 0;
+        println!("{}", clear::All);
+    }
+
+
 }
 
 pub fn is_game_over(scores: &[Score; 18]) -> bool {
@@ -391,171 +650,6 @@ pub fn is_game_over(scores: &[Score; 18]) -> bool {
     }
     true
 }
-
-pub fn print_score_sheet(scores: &mut [Score; 18], lines_selected: &[u8]) {
-    let mut subtotal: u8 = 0;
-    let mut total: u16 = 0;
-
-    for elm in scores.iter() {
-        if elm.name == "One Pair" {
-            break;
-        } else if elm.value != "  " && elm.value != "   " && elm.value != " –" {
-            subtotal += elm.value.trim().parse::<u8>().unwrap();
-        }
-    }
-
-    if subtotal > 99 {
-        scores[16].value.replace_range(.., &subtotal.to_string());
-    } else if subtotal > 9 {
-        scores[16].value.replace_range(1.., &subtotal.to_string());
-    } else if subtotal > 0 {
-        scores[16].value.replace_range(2.., &subtotal.to_string());
-    }
-
-    if subtotal > 62 {
-        scores[15].value.replace_range(.., "50");
-    } else if
-        scores[0].value != "  " &&
-        scores[1].value != "  " &&
-        scores[2].value != "  " &&
-        scores[3].value != "  " &&
-        scores[4].value != "  " &&
-        scores[5].value != "  "
-    {
-        scores[15].value.replace_range(1.., "–");
-    }
-
-    for elm in scores.iter() {
-        if elm.value != "  " &&
-            elm.value != "   " &&
-            elm.value != " –" &&
-            elm.name != "Sum" {
-                total += elm.value.trim().parse::<u16>().unwrap();
-            }
-    }
-
-    if total > 99 {
-        scores[17].value.replace_range(.., &total.to_string());
-    } else if total > 9 {
-        scores[17].value.replace_range(1.., &total.to_string());
-    } else if total > 0 {
-        scores[17].value.replace_range(2.., &total.to_string());
-    }
-
-    println!("╔═══════════════════════════════════════════════╗");
-    println!("║ RUSTY YACHT                                   ║");
-    println!("╠═══════════════════════════╦═══════════════════╣");
-    println!("║                       Max ║             Score ║");
-    println!("╟───────────────────────────╫───────────────────╢");
-    if lines_selected[0] == 1 {
-        println!("║{} Ones                    5 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert,
-                 scores[0].value, style::Reset);
-    } else { println!("║ Ones                    5 ║                {} ║",
-                      scores[0].value); }
-    if lines_selected[1] == 1 {
-        println!("║{} Twos                   10 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[1].value, style::Reset);
-    } else {
-        println!("║ Twos                   10 ║                {} ║",
-                 scores[1].value); }
-    if lines_selected[2] == 1 {
-        println!("║{} Threes                 15 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[2].value, style::Reset);
-    } else {
-        println!("║ Threes                 15 ║                {} ║",
-                 scores[2].value); }
-    if lines_selected[3] == 1 {
-        println!("║{} Fours                  20 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[3].value, style::Reset);
-    } else {println!("║ Fours                  20 ║                {} ║",
-                     scores[3].value); }
-    if lines_selected[4] == 1 {
-        println!("║{} Fives                  25 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[4].value, style::Reset);
-    } else {
-        println!("║ Fives                  25 ║                {} ║",
-                 scores[4].value); }
-    if lines_selected[5] == 1 {
-        println!("║{} Sixes                  30 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[5].value, style::Reset);
-    } else { println!("║ Sixes                  30 ║                {} ║",
-                      scores[5].value); }
-    println!("╟───────────────────────────╫───────────────────╢");
-    if lines_selected[16] == 1 {
-        println!("║{} Sum                105 {}║{}                    {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[16].value, style::Reset);
-    } else { println!("║ Sum                   105 ║               {} ║",
-                      scores[16].value); }
-    println!("║ Bonus                  50 ║                {} ║", scores[15].value);
-  //println!("╟───────────────────────────╫───────────────────╢");
-    if lines_selected[6] == 1 {
-        println!("║{} One Pair               12 {}║{}                {} {}║",
-             style::Invert, style::Reset, style::Invert, scores[6].value, style::Reset);
-    } else { println!("║ One Pair               12 ║                {} ║",
-                      scores[6].value); }
-    if lines_selected[7] == 1 {
-        println!("║{} Two Pairs              22 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[7].value, style::Reset);
-    } else {
-        println!("║ Two Pairs              22 ║                {} ║",
-                 scores[7].value); }
-    if lines_selected[8] == 1 {
-        println!("║{} Three of a Kind        18 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[8].value, style::Reset);
-    } else {
-        println!("║ Three of a Kind        18 ║                {} ║",
-                 scores[8].value);
-    }
-    if lines_selected[9] == 1 {
-        println!("║{} Four of a Kind         24 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[9].value, style::Reset);
-    } else {
-        println!("║ Four of a Kind         24 ║                {} ║",
-                 scores[9].value);
-    }
-    if lines_selected[10] == 1 {
-        println!("║{} Small Straight         15 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[10].value, style::Reset);
-    } else {
-        println!("║ Small Straight         15 ║                {} ║",
-                 scores[10].value);
-    }
-    if lines_selected[11] == 1 {
-        println!("║{} Large Straight         20 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[11].value, style::Reset);
-    } else {
-        println!("║ Large Straight         20 ║                {} ║",
-                 scores[11].value);
-    }
-    if lines_selected[12] == 1 {
-        println!("║{} Full House             28 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[12].value, style::Reset);
-    } else {
-        println!("║ Full House             28 ║                {} ║",
-                 scores[12].value);
-    }
-    if lines_selected[13] == 1 {
-        println!("║{} Chance                 30 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[13].value, style::Reset);
-    } else {
-        println!("║ Chance                 30 ║                {} ║",
-                 scores[13].value);
-    }
-    if lines_selected[14] == 1 {
-        println!("║{} Yatzy                  50 {}║{}                {} {}║",
-                 style::Invert, style::Reset, style::Invert, scores[14].value, style::Reset);
-    } else {
-        println!("║ Yatzy                  50 ║                {} ║",
-                 scores[14].value);
-    }
-    println!("╟───────────────────────────╫───────────────────╢");
-    println!("║ Total                 374 ║               {} ║", scores[17].value);
-    println!("╚═══════════════════════════╩═══════════════════╝");
-
-    scores[17].value.replace_range(.., "   ");
-}
-
 
 pub struct Highscore;
 
@@ -688,8 +782,6 @@ impl Highscore {
             },
         }
     }
-
-
 }
 
 pub struct Dice {
@@ -708,12 +800,30 @@ impl Dice {
     pub fn keep_all(dice: &Dice) -> bool {
         for &i in dice.to_keep.iter() {
             if i == 0 {
-                return false
+                return false;
             }
         }
         true
     }
 
+    pub fn roll(dice: &mut Dice) {
+        for (i, &item) in dice.to_keep.iter().enumerate() {
+            if item == 0 as usize {
+                dice.current[i] = rand::thread_rng().gen_range(1, 7);
+            } else {
+                dice.current[i] = item;
+            }
+        }
+    }
+
+    pub fn reroll_all(dice: &mut Dice) {
+        for die in &mut dice.current.iter_mut() {
+            *die = rand::thread_rng().gen_range(1, 7);
+        }
+        for die in &mut dice.to_keep {
+            *die = 0 as usize;
+        }
+    }
     
     pub fn print(dice: &Dice) {
         let mut dot: [[char; 15]; 3] = [[' '; 15]; 3];
@@ -1028,18 +1138,18 @@ impl Dice {
             write!(stdout, "{}{}", termion::cursor::Goto(1, bottom_line), termion::clear::CurrentLine).unwrap();
 
             match c.unwrap() {
-                Key::Ctrl(c) => { if c == 'c' { return DiceExit; } },
+                Key::Ctrl(c) => { if c == 'c' { return DiceSelectStatus::Exit; } },
                 Key::Char('\n') => { selected[*margin_width] = 1;
-                                     return DiceComplete;},
+                                     return DiceSelectStatus::Complete;},
                 Key::Char(' ')  => { println!("{}●━━━━━━━●{}", *left_margin, termion::cursor::Goto(1, bottom_line -4));
                                      if selected[*margin_width] == 0 && dice.to_keep[*margin_width] == 0 {
                                          dice.to_keep[*margin_width] = dice.current[*margin_width];
                                          selected[*margin_width] = 1;
-                                         return DiceIncomplete;
+                                         return DiceSelectStatus::Incomplete;
                                      } else {
                                          dice.to_keep[*margin_width] = 0;
                                          selected[*margin_width] = 0;
-                                         return DiceIncomplete;
+                                         return DiceSelectStatus::Incomplete;
                                      } },
                 Key::Left      => { if *margin_width > 0 { *margin_width = *margin_width -1};
                                     if *margin_width == 0 {
@@ -1102,7 +1212,7 @@ impl Dice {
 
         // Show the cursor again before we exit.
         write!(stdout, "{}", termion::cursor::Show).unwrap();
-        DiceIncomplete
+        DiceSelectStatus::Incomplete
     }
 }
 
@@ -1123,9 +1233,9 @@ fn select_slot(dice: &Dice,
 
     for c in stdin.keys() {
         match c.unwrap() {
-            Key::Ctrl(c) => { if c == 'c' { return SlotExit; } },
+            Key::Ctrl(c) => { if c == 'c' { return SlotSelectStatus::Exit; } },
             Key::Char('\n') => { if scores[*i].value != "  ".to_string()
-                                 { return SlotAlreadySelected;
+                                 { return SlotSelectStatus::AlreadySelected;
                                  } else if validators[*i](&dice.current) != None {
                                      println!("validators[*i](dice) != None");
                                      if validators[*i](&dice.current).unwrap() > 9 {
@@ -1135,66 +1245,66 @@ fn select_slot(dice: &Dice,
                                      }
                                      scores[*i].selected = true;
                                      stdout.flush().unwrap();
-                                     return SlotComplete;
+                                     return SlotSelectStatus::Complete;
                                  } else {
                                      scores[*i].selected = true;
                                      stdout.flush().unwrap();
-                                     return SlotInvalid;
+                                     return SlotSelectStatus::Invalid;
                                  }
             },
             Key::Char('-') => { if scores[*i].value == "  ".to_string() {
                 scores[*i].selected = true;
                 scores[*i].value.replace_range(1.., "–");
                 stdout.flush().unwrap();
-                return SlotComplete;
+                return SlotSelectStatus::Complete;
             } },
             Key::Up      => { if i > &mut 0
                               {
                                   *i -= 1;
                                   lines_selected[*i] = 1;
                                   lines_selected[*i+1] = 0;
-                                  return SlotIncomplete;
+                                  return SlotSelectStatus::Incomplete;
                               } else {
                                   *i = 14;
                                   lines_selected[*i] = 1;
                                   lines_selected[0] = 0;
-                                  return SlotIncomplete;
+                                  return SlotSelectStatus::Incomplete;
                               } },
             Key::Left      => { if *i > 0
                                 {
                                     *i -= 1;
                                     lines_selected[*i] = 1;
                                     lines_selected[*i+1] = 0;
-                                    return SlotIncomplete;
+                                    return SlotSelectStatus::Incomplete;
                                 } else {
                                     *i = 14;
                                     lines_selected[*i] = 1;
                                     lines_selected[0] = 0;
-                                    return SlotIncomplete;
+                                    return SlotSelectStatus::Incomplete;
                                 } },
             Key::Down      => { if *i < 14
                                 {
                                     *i += 1;
                                     lines_selected[*i] = 1;
                                     lines_selected[*i-1] = 0;
-                                    return SlotIncomplete;
+                                    return SlotSelectStatus::Incomplete;
                                 } else {
                                     *i = 0;
                                     lines_selected[*i] = 1;
                                     lines_selected[14] = 0;
-                                    return SlotIncomplete;
+                                    return SlotSelectStatus::Incomplete;
                                 } },
             Key::Right      => { if *i < 14
                                  {
                                      *i += 1;
                                      lines_selected[*i] = 1;
                                      lines_selected[*i-1] = 0;
-                                     return SlotIncomplete;
+                                     return SlotSelectStatus::Incomplete;
                                  } else {
                                      *i = 0;
                                      lines_selected[*i] = 1;
                                      lines_selected[14] = 0;
-                                     return SlotIncomplete;
+                                     return SlotSelectStatus::Incomplete;
                                  } },
             _              => continue,
         }
@@ -1205,101 +1315,9 @@ fn select_slot(dice: &Dice,
 
     // Show the cursor again before we exit.
     write!(stdout, "{}", termion::cursor::Show).unwrap();
-    SlotIncomplete
+    SlotSelectStatus::Incomplete
 }
 
-pub fn place_points(mut scores: &mut [Score; 18],
-                    validators: [fn(&[usize; 5]) -> Option<usize>; 15],
-                    mut lines_selected: &mut [u8], dice: &Dice, lp: &mut bool) {
-    let mut i = 0 as usize;
-    loop {
-        lines_selected[i] = 1;
-        print_score_sheet(&mut scores, &lines_selected);
-        Dice::print(&dice);
-
-        match select_slot(&dice, validators, scores, &mut lines_selected, &mut i) {
-            SlotExit            => { *lp = false;
-                                      break;},
-            SlotAlreadySelected => { println!("{}", clear::All);
-                                     println!("  Sorry, you can't use this slot again.");
-                                     println!("  Press Enter to continue.");
-                                     print_score_sheet(&mut scores, &lines_selected);
-                                     Dice::print(&dice);
-                                     let stdin = stdin();
-                                     let mut stdout = stdout().into_raw_mode().unwrap();
-                                     write!(stdout, "{}", termion::cursor::Hide).unwrap();
-                                     for c in stdin.keys() {
-                                         match c.unwrap() {
-                                             Key::Ctrl(c) => if c == 'c' {
-                                                 *lp = false;
-                                                 break;
-                                             },
-                                             Key::Char('\n') => {
-                                                 println!("{}", clear::All);
-                                                 break;
-                                             },
-                                             Key::Up => {
-                                                 if i != 0 {
-                                                     i -= 1;
-                                                     lines_selected[i+1] = 0;
-                                                 } else {
-                                                     i = 14;
-                                                     lines_selected[0] = 0;
-                                                 }
-                                                 lines_selected[i] = 1;
-                                                 println!("{}", clear::All);
-                                                 break;
-                                             },
-                                             Key::Down => {
-                                                 if i != 14 {
-                                                     i += 1;
-                                                     lines_selected[i-1] = 0;
-                                                 } else {
-                                                     i = 0;
-                                                     lines_selected[14] = 0;
-                                                 }
-                                                 lines_selected[i] = 1;
-                                                 println!("{}", clear::All);
-                                                 break;
-                                             },
-                                             _ => { println!("{}", clear::All);
-                                                    continue;
-                                             }
-                                         }
-                                     }
-                                     stdout.flush().unwrap();
-            },
-
-            SlotComplete      => { println!("{}", clear::All);
-                                   println!("  Selection complete. Press Enter to continue.");
-                                   print_score_sheet(&mut scores, &lines_selected);
-                                   Dice::print(&dice);
-                                   let stdin = stdin();
-                                   let mut stdout = stdout().into_raw_mode().unwrap();
-                                   write!(stdout, "{}", termion::cursor::Hide).unwrap();
-                                   for c in stdin.keys() {
-                                       match c.unwrap() {
-                                           Key::Ctrl(c) => if c == 'c' {
-                                               *lp = false;
-                                               break;
-                                           },
-                                           Key::Char('\n') => break,
-                                           _ => continue,
-                                       }
-                                   }
-                                   stdout.flush().unwrap();
-                                   break; },
-            SlotIncomplete    => { println!("{}", clear::All); },
-            SlotInvalid       => {
-                println!("{}", clear::All);
-                println!("  Invalid selection. Press - to strike it out");
-                println!("  or an arrow key to cancel.");
-            },
-        }
-    }
-    lines_selected[i] = 0;
-    println!("{}", clear::All);
-}
 
 pub fn welcome() {
     println!("R U S T Y R U S T Y R U S T Y R U S T Y R U S T Y");

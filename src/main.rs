@@ -24,65 +24,54 @@ extern crate rand;
 extern crate termion;
 extern crate rusty_yacht;
 
-use rand::Rng;
 use termion::clear;
 use rusty_yacht::Dice;
 use rusty_yacht::Score;
-use rusty_yacht::Scoring;
+use rusty_yacht::ScoreValidator;
 use rusty_yacht::Highscore;
-use rusty_yacht::DiceSelectStatus::{DiceComplete, DiceIncomplete, DiceExit};
-use rusty_yacht::print_score_sheet;
+use rusty_yacht::DiceSelectStatus;
 use rusty_yacht::is_game_over;
-use rusty_yacht::place_points;
 use rusty_yacht::welcome;
 
 fn main() {
     let path = Highscore::new_path();
-    let mut count: u8 = 0;
-    let mut rng = rand::thread_rng();
 
     // points slot selection
     let mut lines_selected: [u8; 17] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
     let mut dice = Dice::new();
-    let validators = Scoring::new();
+    let validators = ScoreValidator::new();
     let mut scores = Score::new();
 
     println!("{}", clear::All);
 
     println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
-    print_score_sheet(&mut scores, &lines_selected);
+    Score::print(&mut scores, &lines_selected);
 
     welcome();
-    
+
+    let mut count: u8 = 0;
     let mut lp: bool = true;
     while lp {
         println!("{}", clear::All);
-
         println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
-        print_score_sheet(&mut scores, &lines_selected);
+        Score::print(&mut scores, &lines_selected);
 
         count += 1;
         // Time to place points
         if count > 2 || Dice::keep_all(&dice) {
             count = 1;
-            for (i, &item) in dice.to_keep.iter().enumerate() {
-                if item == 0 as usize {
-                    dice.current[i] = rng.gen_range(1, 7);
-                } else {
-                    dice.current[i] = item;
-                }
-            }
+            Dice::roll(&mut dice);
             println!("{}", clear::All);
             println!("  Where do you want to place your points?");
             println!("  Use the arrow keys and press Enter to select.");
-            place_points(&mut scores, validators, &mut lines_selected,
-                         &dice, &mut lp);
+            Score::place_points(&mut scores, validators, &mut lines_selected,
+                                &dice, &mut lp);
 
             if is_game_over(&scores) {
                 println!("{}", clear::All);
                 println!("  GAME OVER");
-                print_score_sheet(&mut scores, &lines_selected);
+                Score::print(&mut scores, &lines_selected);
                 Dice::print(&dice);
                 Highscore::log(&path, scores);
                 println!("{}", clear::All);
@@ -91,33 +80,22 @@ fn main() {
                 break;
             }
 
-            print_score_sheet(&mut scores, &lines_selected);
+            Score::print(&mut scores, &lines_selected);
             Dice::print(&dice);
 
-            for die in &mut dice.current.iter_mut() {
-                *die = rand::thread_rng().gen_range(1, 7);
-            }
-            for die in &mut dice.to_keep {
-                *die = 0 as usize;
-            }
+            Dice::reroll_all(&mut dice);
 
             println!("{}", clear::All);
-            print_score_sheet(&mut scores, &lines_selected);
+            Score::print(&mut scores, &lines_selected);
             Dice::print(&dice);
 
         } else {
             Dice::print(&dice);
 
             println!("{}", clear::All);
-            print_score_sheet(&mut scores, &lines_selected);
+            Score::print(&mut scores, &lines_selected);
 
-            for (i, &item) in dice.to_keep.iter().enumerate() {
-                if item == 0 as usize {
-                    dice.current[i] = rand::thread_rng().gen_range(1, 7);
-                } else {
-                    dice.current[i] = item;
-                }
-            }
+            Dice::roll(&mut dice);
             Dice::print(&dice);
         }
         if count < 3 {
@@ -131,13 +109,13 @@ fn main() {
                 } else {
                     println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll\n  for the last time.");
                 }
-                print_score_sheet(&mut scores, &lines_selected);
+                Score::print(&mut scores, &lines_selected);
                 Dice::print(&dice);
                 match Dice::select(&mut dice, &mut left_margin,
                                    &mut margin_width, &mut selected) {
-                    DiceExit => { lp = false; break; },
-                    DiceComplete => break,
-                    DiceIncomplete => continue,
+                    DiceSelectStatus::Exit => { lp = false; break; },
+                    DiceSelectStatus::Complete => break,
+                    DiceSelectStatus::Incomplete => continue,
                 };
             }
         }
