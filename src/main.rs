@@ -20,104 +20,92 @@
 //////////////////////////////////////////////////////////////////////////
 
 extern crate dirs;
-extern crate rand;
-extern crate termion;
 extern crate rusty_yacht;
 
-use termion::clear;
 use rusty_yacht::Dice;
-use rusty_yacht::Score;
+use rusty_yacht::Scores;
 use rusty_yacht::ScoreValidator;
 use rusty_yacht::Highscore;
 use rusty_yacht::DiceSelectStatus;
-use rusty_yacht::is_game_over;
 use rusty_yacht::welcome;
+use rusty_yacht::clear_screen;
 
 fn main() {
-    let path = Highscore::new_path();
-
-    // points slot selection
-    let mut lines_selected: [u8; 17] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-
+    let file = Highscore::new_path();
     let mut dice = Dice::new();
     let validators = ScoreValidator::new();
-    let mut scores = Score::new();
+    let mut score = Scores::new();
 
-    println!("{}", clear::All);
-
+    clear_screen();
     println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
-    Score::print(&mut scores, &lines_selected);
-
+    score.print();
     welcome();
 
     let mut count: u8 = 0;
     let mut lp: bool = true;
     while lp {
-        println!("{}", clear::All);
+        clear_screen();
         println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
-        Score::print(&mut scores, &lines_selected);
+        score.print();
 
-        count += 1;
-        // Time to place points
-        if count > 2 || Dice::keep_all(&dice) {
-            count = 1;
-            Dice::roll(&mut dice);
-            println!("{}", clear::All);
-            println!("  Where do you want to place your points?");
-            println!("  Use the arrow keys and press Enter to select.");
-            Score::place_points(&mut scores, validators, &mut lines_selected,
-                                &dice, &mut lp);
+        if count < 2 && dice.keep_all() == false {
+            clear_screen();
+            score.print();
+            dice.roll();
+            count += 1;
+            dice.print();
 
-            if is_game_over(&scores) {
-                println!("{}", clear::All);
-                println!("  GAME OVER");
-                Score::print(&mut scores, &lines_selected);
-                Dice::print(&dice);
-                Highscore::log(&path, scores);
-                println!("{}", clear::All);
-                let highscore = Highscore::new(&path);
-                Highscore::print(&highscore);
-                break;
-            }
-
-            Score::print(&mut scores, &lines_selected);
-            Dice::print(&dice);
-
-            Dice::reroll_all(&mut dice);
-
-            println!("{}", clear::All);
-            Score::print(&mut scores, &lines_selected);
-            Dice::print(&dice);
-
-        } else {
-            Dice::print(&dice);
-
-            println!("{}", clear::All);
-            Score::print(&mut scores, &lines_selected);
-
-            Dice::roll(&mut dice);
-            Dice::print(&dice);
-        }
-        if count < 3 {
             let mut selected: [usize; 5] = [0, 0, 0, 0, 0];
             let mut left_margin = "".to_string();
             let mut margin_width: usize = 0;
             loop {
-                println!("{}", clear::All);
-                if count == 1 {
-                    println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll.");
-                } else {
+                clear_screen();
+                if count == 2 {
                     println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll\n  for the last time.");
+                } else {
+                    println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll.");
+
                 }
-                Score::print(&mut scores, &lines_selected);
-                Dice::print(&dice);
-                match Dice::select(&mut dice, &mut left_margin,
-                                   &mut margin_width, &mut selected) {
-                    DiceSelectStatus::Exit => { lp = false; break; },
+                score.print();
+                dice.print();
+                match dice.select(&mut left_margin, &mut margin_width,
+                                  &mut selected) {
+                    DiceSelectStatus::Exit => {
+                        lp = false;
+                        break;
+                    },
                     DiceSelectStatus::Complete => break,
                     DiceSelectStatus::Incomplete => continue,
                 };
             }
+
+        // Time to place points
+        } else if count > 1 || dice.keep_all() {
+            count = 0;
+            dice.roll();
+            clear_screen();
+            println!("  Where do you want to place your points?");
+            println!("  Use the arrow keys and press Enter to select.");
+            score.place_points(validators, &dice, &mut lp);
+
+            if score.is_final() {
+                clear_screen();
+                println!("  GAME OVER");
+                score.print();
+                dice.print();
+                Highscore::log(&file, score);
+                clear_screen();
+                let highscore = Highscore::new(&file);
+                Highscore::print(&highscore);
+                break;
+            }
+
+            score.print();
+            dice.print();
+            dice.reroll_all();
+            clear_screen();
+            score.print();
+            dice.print();
         }
     }
 }

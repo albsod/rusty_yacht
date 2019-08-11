@@ -307,83 +307,89 @@ impl ScoreValidator {
     }
 }
 
-pub struct Score {
-    pub name: &'static str,
-    pub value: String,
-    pub selected: bool,
+struct Score {
+    name: &'static str,
+    value: String,
+    selected: bool,
+    highlighted: u8,
 }
 
-impl Score {
-    pub fn new() -> [Score; 18] {
+pub struct Scores {
+    scores: [Score; 18],
+}
+
+impl Scores {
+    pub fn new() -> Scores {
         // initialize score values
         let score_ones = Score {
-            name: "Ones", value: "  ".to_string(), selected: false,
+            name: "Ones", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_twos = Score {
-            name: "Twos", value: "  ".to_string(), selected: false,
+            name: "Twos", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_threes = Score {
-            name: "Threes", value: "  ".to_string(), selected: false,
+            name: "Threes", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_fours = Score {
-            name: "Fours", value: "  ".to_string(), selected: false,
+            name: "Fours", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_fives = Score {
-            name: "Fives", value: "  ".to_string(), selected: false,
+            name: "Fives", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_sixes = Score {
-            name: "Sixes", value: "  ".to_string(), selected: false,
+            name: "Sixes", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_bonus = Score {
-            name: "Bonus", value: "  ".to_string(), selected: false,
+            name: "Bonus", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_one_pair = Score {
-            name: "One Pair", value: "  ".to_string(), selected: false,
+            name: "One Pair", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_two_pairs = Score {
-            name: "Two Pairs", value: "  ".to_string(), selected: false,
+            name: "Two Pairs", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_three_kind = Score {
-            name: "Three of a Kind", value: "  ".to_string(), selected: false,
+            name: "Three of a Kind", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_four_kind = Score {
-            name: "Four of a Kind", value: "  ".to_string(), selected: false,
+            name: "Four of a Kind", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_small_str = Score {
-            name: "Small Straight", value: "  ".to_string(), selected: false,
+            name: "Small Straight", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_large_str = Score {
-            name: "Large Straight", value: "  ".to_string(), selected: false,
+            name: "Large Straight", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_full_house = Score {
-            name: "Full House", value: "  ".to_string(), selected: false,
+            name: "Full House", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_chance = Score {
-            name: "Chance", value: "  ".to_string(), selected: false,
+            name: "Chance", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_yatzy = Score {
-            name: "Yatzy", value: "  ".to_string(), selected: false,
+            name: "Yatzy", value: "  ".to_string(), selected: false, highlighted: 0
         };
         let score_subtotal = Score {
-            name: "Sum", value: "   ".to_string(), selected: false,
+            name: "Sum", value: "   ".to_string(), selected: false, highlighted: 0
         };
         let score_total = Score {
-            name: "Total", value: "   ".to_string(), selected: false,
+            name: "Total", value: "   ".to_string(), selected: false, highlighted: 0
         };
 
-        // Return the score values as an array
-        [score_ones, score_twos, score_threes, score_fours,
-         score_fives, score_sixes, score_one_pair, score_two_pairs,
-         score_three_kind, score_four_kind, score_small_str,
-         score_large_str, score_full_house, score_chance,
-         score_yatzy, score_bonus, score_subtotal, score_total]
+        // Return the score values as a Scores struct
+        Scores {scores: [score_ones, score_twos, score_threes, score_fours,
+                         score_fives, score_sixes, score_one_pair, score_two_pairs,
+                         score_three_kind, score_four_kind, score_small_str,
+                         score_large_str, score_full_house, score_chance,
+                         score_yatzy, score_bonus, score_subtotal, score_total]}
     }
 
-    pub fn print(scores: &mut [Score; 18], lines_selected: &[u8]) {
+    pub fn print(&mut self) {
+
         let mut subtotal: u8 = 0;
         let mut total: u16 = 0;
 
-        for elm in scores.iter() {
+        for elm in self.scores.iter() {
             if elm.name == "One Pair" {
                 break;
             } else if elm.value != "  " && elm.value != "   " && elm.value != " –" {
@@ -392,27 +398,27 @@ impl Score {
         }
 
         if subtotal > 99 {
-            scores[16].value.replace_range(.., &subtotal.to_string());
+            self.scores[16].value.replace_range(.., &subtotal.to_string());
         } else if subtotal > 9 {
-            scores[16].value.replace_range(1.., &subtotal.to_string());
+            self.scores[16].value.replace_range(1.., &subtotal.to_string());
         } else if subtotal > 0 {
-            scores[16].value.replace_range(2.., &subtotal.to_string());
+            self.scores[16].value.replace_range(2.., &subtotal.to_string());
         }
 
         if subtotal > 62 {
-            scores[15].value.replace_range(.., "50");
+            self.scores[15].value.replace_range(.., "50");
         } else if
-            scores[0].value != "  " &&
-            scores[1].value != "  " &&
-            scores[2].value != "  " &&
-            scores[3].value != "  " &&
-            scores[4].value != "  " &&
-            scores[5].value != "  "
+            self.scores[0].value != "  " &&
+            self.scores[1].value != "  " &&
+            self.scores[2].value != "  " &&
+            self.scores[3].value != "  " &&
+            self.scores[4].value != "  " &&
+            self.scores[5].value != "  "
         {
-            scores[15].value.replace_range(1.., "–");
+            self.scores[15].value.replace_range(1.., "–");
         }
 
-        for elm in scores.iter() {
+        for elm in self.scores.iter() {
             if elm.value != "  " &&
                 elm.value != "   " &&
                 elm.value != " –" &&
@@ -422,11 +428,11 @@ impl Score {
         }
 
         if total > 99 {
-            scores[17].value.replace_range(.., &total.to_string());
+            self.scores[17].value.replace_range(.., &total.to_string());
         } else if total > 9 {
-            scores[17].value.replace_range(1.., &total.to_string());
+            self.scores[17].value.replace_range(1.., &total.to_string());
         } else if total > 0 {
-            scores[17].value.replace_range(2.., &total.to_string());
+            self.scores[17].value.replace_range(2.., &total.to_string());
         }
 
         println!("╔═══════════════════════════════════════════════╗");
@@ -434,131 +440,130 @@ impl Score {
         println!("╠═══════════════════════════╦═══════════════════╣");
         println!("║                       Max ║             Score ║");
         println!("╟───────────────────────────╫───────────────────╢");
-        if lines_selected[0] == 1 {
+        if self.scores[0].highlighted == 1 {
             println!("║{} Ones                    5 {}║{}                {} {}║",
                      style::Invert, style::Reset, style::Invert,
-                     scores[0].value, style::Reset);
+                     self.scores[0].value, style::Reset);
         } else { println!("║ Ones                    5 ║                {} ║",
-                          scores[0].value); }
-        if lines_selected[1] == 1 {
+                          self.scores[0].value); }
+        if self.scores[1].highlighted == 1 {
             println!("║{} Twos                   10 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[1].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[1].value, style::Reset);
         } else {
             println!("║ Twos                   10 ║                {} ║",
-                     scores[1].value); }
-        if lines_selected[2] == 1 {
+                     self.scores[1].value); }
+        if self.scores[2].highlighted == 1 {
             println!("║{} Threes                 15 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[2].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[2].value, style::Reset);
         } else {
             println!("║ Threes                 15 ║                {} ║",
-                     scores[2].value); }
-        if lines_selected[3] == 1 {
+                     self.scores[2].value); }
+        if self.scores[3].highlighted == 1 {
             println!("║{} Fours                  20 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[3].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[3].value, style::Reset);
         } else {println!("║ Fours                  20 ║                {} ║",
-                         scores[3].value); }
-        if lines_selected[4] == 1 {
+                         self.scores[3].value); }
+        if self.scores[4].highlighted == 1 {
             println!("║{} Fives                  25 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[4].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[4].value, style::Reset);
         } else {
             println!("║ Fives                  25 ║                {} ║",
-                     scores[4].value); }
-        if lines_selected[5] == 1 {
+                     self.scores[4].value); }
+        if self.scores[5].highlighted == 1 {
             println!("║{} Sixes                  30 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[5].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[5].value, style::Reset);
         } else { println!("║ Sixes                  30 ║                {} ║",
-                          scores[5].value); }
+                          self.scores[5].value); }
         println!("╟───────────────────────────╫───────────────────╢");
-        if lines_selected[16] == 1 {
+        if self.scores[16].highlighted == 1 {
             println!("║{} Sum                105 {}║{}                    {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[16].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[16].value, style::Reset);
         } else { println!("║ Sum                   105 ║               {} ║",
-                          scores[16].value); }
-        println!("║ Bonus                  50 ║                {} ║", scores[15].value);
+                          self.scores[16].value); }
+        println!("║ Bonus                  50 ║                {} ║", self.scores[15].value);
         //println!("╟───────────────────────────╫───────────────────╢");
-        if lines_selected[6] == 1 {
+        if self.scores[6].highlighted == 1 {
             println!("║{} One Pair               12 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[6].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[6].value, style::Reset);
         } else { println!("║ One Pair               12 ║                {} ║",
-                          scores[6].value); }
-        if lines_selected[7] == 1 {
+                          self.scores[6].value); }
+        if self.scores[7].highlighted == 1 {
             println!("║{} Two Pairs              22 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[7].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[7].value, style::Reset);
         } else {
             println!("║ Two Pairs              22 ║                {} ║",
-                     scores[7].value); }
-        if lines_selected[8] == 1 {
+                     self.scores[7].value); }
+        if self.scores[8].highlighted == 1 {
             println!("║{} Three of a Kind        18 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[8].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[8].value, style::Reset);
         } else {
             println!("║ Three of a Kind        18 ║                {} ║",
-                     scores[8].value);
+                     self.scores[8].value);
         }
-        if lines_selected[9] == 1 {
+        if self.scores[9].highlighted == 1 {
             println!("║{} Four of a Kind         24 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[9].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[9].value, style::Reset);
         } else {
             println!("║ Four of a Kind         24 ║                {} ║",
-                     scores[9].value);
+                     self.scores[9].value);
         }
-        if lines_selected[10] == 1 {
+        if self.scores[10].highlighted == 1 {
             println!("║{} Small Straight         15 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[10].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[10].value, style::Reset);
         } else {
             println!("║ Small Straight         15 ║                {} ║",
-                     scores[10].value);
+                     self.scores[10].value);
         }
-        if lines_selected[11] == 1 {
+        if self.scores[11].highlighted == 1 {
             println!("║{} Large Straight         20 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[11].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[11].value, style::Reset);
         } else {
             println!("║ Large Straight         20 ║                {} ║",
-                     scores[11].value);
+                     self.scores[11].value);
         }
-        if lines_selected[12] == 1 {
+        if self.scores[12].highlighted == 1 {
             println!("║{} Full House             28 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[12].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[12].value, style::Reset);
         } else {
             println!("║ Full House             28 ║                {} ║",
-                     scores[12].value);
+                     self.scores[12].value);
         }
-        if lines_selected[13] == 1 {
+        if self.scores[13].highlighted == 1 {
             println!("║{} Chance                 30 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[13].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[13].value, style::Reset);
         } else {
             println!("║ Chance                 30 ║                {} ║",
-                     scores[13].value);
+                     self.scores[13].value);
         }
-        if lines_selected[14] == 1 {
+        if self.scores[14].highlighted == 1 {
             println!("║{} Yatzy                  50 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, scores[14].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self.scores[14].value, style::Reset);
         } else {
             println!("║ Yatzy                  50 ║                {} ║",
-                     scores[14].value);
+                     self.scores[14].value);
         }
         println!("╟───────────────────────────╫───────────────────╢");
-        println!("║ Total                 374 ║               {} ║", scores[17].value);
+        println!("║ Total                 374 ║               {} ║", self.scores[17].value);
         println!("╚═══════════════════════════╩═══════════════════╝");
 
-        scores[17].value.replace_range(.., "   ");
+        self.scores[17].value.replace_range(.., "   ");
     }
 
-    pub fn place_points(mut scores: &mut [Score; 18],
-                        validators: [fn(&[usize; 5]) -> Option<usize>; 15],
-                        mut lines_selected: &mut [u8], dice: &Dice, lp: &mut bool) {
+    pub fn place_points(&mut self, validators: [fn(&[usize; 5]) -> Option<usize>; 15],
+                        dice: &Dice, lp: &mut bool) {
         let mut i = 0 as usize;
         loop {
-            lines_selected[i] = 1;
-            Score::print(&mut scores, &lines_selected);
+            self.scores[i].highlighted = 1;
+            self.print();
             Dice::print(&dice);
 
-            match select_slot(&dice, validators, scores, &mut lines_selected, &mut i) {
+            match self.select_slot(&dice, validators, &mut i) {
                 SlotSelectStatus::Exit => { *lp = false;
                                              break;},
                 SlotSelectStatus::AlreadySelected => { println!("{}", clear::All);
                                                        println!("  Sorry, you can't use this slot again.");
                                                        println!("  Press Enter to continue.");
-                                                       Score::print(&mut scores, &lines_selected);
+                                                       self.print();
                                                        Dice::print(&dice);
                                                        let stdin = stdin();
                                                        let mut stdout = stdout().into_raw_mode().unwrap();
@@ -576,24 +581,24 @@ impl Score {
                                                                Key::Up => {
                                                                    if i != 0 {
                                                                        i -= 1;
-                                                                       lines_selected[i+1] = 0;
+                                                                       self.scores[i+1].highlighted = 0;
                                                                    } else {
                                                                        i = 14;
-                                                                       lines_selected[0] = 0;
+                                                                       self.scores[0].highlighted = 0;
                                                                    }
-                                                                   lines_selected[i] = 1;
+                                                                   self.scores[i].highlighted = 1;
                                                                    println!("{}", clear::All);
                                                                    break;
                                                                },
                                                                Key::Down => {
                                                                    if i != 14 {
                                                                        i += 1;
-                                                                       lines_selected[i-1] = 0;
+                                                                       self.scores[i-1].highlighted = 0;
                                                                    } else {
                                                                        i = 0;
-                                                                       lines_selected[14] = 0;
+                                                                       self.scores[14].highlighted = 0;
                                                                    }
-                                                                   lines_selected[i] = 1;
+                                                                   self.scores[i].highlighted = 1;
                                                                    println!("{}", clear::All);
                                                                    break;
                                                                },
@@ -607,7 +612,7 @@ impl Score {
 
                 SlotSelectStatus::Complete  => { println!("{}", clear::All);
                                                  println!("  Selection complete. Press Enter to continue.");
-                                                 Score::print(&mut scores, &lines_selected);
+                                                 self.print();
                                                  Dice::print(&dice);
                                                  let stdin = stdin();
                                                  let mut stdout = stdout().into_raw_mode().unwrap();
@@ -632,24 +637,134 @@ impl Score {
                 },
             }
         }
-        lines_selected[i] = 0;
+        self.scores[i].highlighted = 0;
         println!("{}", clear::All);
     }
-
-
-}
-
-pub fn is_game_over(scores: &[Score; 18]) -> bool {
-    for item in scores.iter() {
-        if item.name == "Bonus" {
-            continue;
+    pub fn is_final(&self) -> bool {
+        for item in self.scores.iter() {
+            if item.name == "Bonus" {
+                continue;
+            }
+            if item.value == "  " {
+                return false;
+            }
         }
-        if item.value == "  " {
-            return false;
-        }
+        true
     }
-    true
+    fn select_slot(&mut self, dice: &Dice,
+                   validators: [fn(&[usize; 5]) -> Option<usize>; 15],
+                   i: &mut usize) -> SlotSelectStatus {
+
+        // Enter raw mode
+        // Get the standard input stream.
+        let stdin = stdin();
+        // Get the standard output stream and go to raw mode.
+        let mut stdout = stdout().into_raw_mode().unwrap();
+        write!(stdout, "{}", termion::cursor::Hide).unwrap();
+        // Flush stdout (i.e. make the output appear).
+        stdout.flush().unwrap();
+
+        for c in stdin.keys() {
+            match c.unwrap() {
+                Key::Ctrl(c) => {
+                    if c == 'c' {
+                        return SlotSelectStatus::Exit;
+                    }
+                },
+                Key::Char('\n') => {
+                    if self.scores[*i].value != "  ".to_string() {
+                        return SlotSelectStatus::AlreadySelected;
+                    } else if validators[*i](&dice.current) != None {
+                        //println!("validators[*i](dice) != None"); // ???
+                        if validators[*i](&dice.current).unwrap() > 9 {
+                            self.scores[*i].value.replace_range(.., &validators[*i](&dice.current).unwrap().to_string());
+                        } else {
+                            self.scores[*i].value.replace_range(1.., &validators[*i](&dice.current).unwrap().to_string());
+                        }
+                        self.scores[*i].selected = true;
+                        stdout.flush().unwrap();
+                        return SlotSelectStatus::Complete;
+                    } else {
+                        self.scores[*i].selected = true;
+                        stdout.flush().unwrap();
+                        return SlotSelectStatus::Invalid;
+                    }
+                },
+                Key::Char('-') => {
+                    if self.scores[*i].value == "  ".to_string() {
+                        self.scores[*i].selected = true;
+                        self.scores[*i].value.replace_range(1.., "–");
+                        stdout.flush().unwrap();
+                        return SlotSelectStatus::Complete;
+                    }
+                },
+                Key::Up => {
+                    if i > &mut 0 {
+                        *i -= 1;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[*i+1].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    } else {
+                        *i = 14;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[0].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    }
+                },
+                Key::Left => {
+                    if *i > 0 {
+                        *i -= 1;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[*i+1].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    } else {
+                        *i = 14;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[0].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    }
+                },
+                Key::Down => {
+                    if *i < 14 {
+                        *i += 1;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[*i-1].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    } else {
+                        *i = 0;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[14].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    }
+                },
+                Key::Right => {
+                    if *i < 14 {
+                        *i += 1;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[*i-1].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    } else {
+                        *i = 0;
+                        self.scores[*i].highlighted = 1;
+                        self.scores[14].highlighted = 0;
+                        return SlotSelectStatus::Incomplete;
+                    }
+                },
+                _ => continue,
+            }
+        }
+
+        // Flush again.
+        stdout.flush().unwrap();
+
+        // Show the cursor again before we exit.
+        write!(stdout, "{}", termion::cursor::Show).unwrap();
+        SlotSelectStatus::Incomplete
+    }
+
+
 }
+
 
 pub struct Highscore;
 
@@ -665,7 +780,7 @@ impl Highscore {
         path.push("highscore");
         path
     }
-    
+
     pub fn new(path: &std::path::PathBuf) -> Vec<(u32, String, String)> {
         let file = File::open(&path).unwrap_or_else(|error| {
             if error.kind() == ErrorKind::NotFound {
@@ -723,7 +838,7 @@ impl Highscore {
         println!("╚══════════════════════════╩════════════╩═══════╝");
     }
 
-    pub fn log(path: &std::path::PathBuf, scores: [Score; 18]) {
+    pub fn log(path: &std::path::PathBuf, scores: Scores) {
         let mut name = String::new();
         loop {
             println!("Input a name to log your score:");
@@ -761,7 +876,7 @@ impl Highscore {
             });
         let mut total: u16 = 0;
 
-        for elm in scores.iter() {
+        for elm in scores.scores.iter() {
             if elm.value != "  " &&
                 elm.value != "   " &&
                 elm.value != " –" &&
@@ -769,7 +884,7 @@ impl Highscore {
                     total += elm.value.trim().parse::<u16>().unwrap();
                 }
         }
-        
+
         match total {
             0..=9 => { if let Err(e) = writeln!(file, "{}| {} |  {:?}", name, date, total) {
                 eprintln!("Couldn't write to file: {}", e); }
@@ -797,8 +912,8 @@ impl Dice {
         }
     }
 
-    pub fn keep_all(dice: &Dice) -> bool {
-        for &i in dice.to_keep.iter() {
+    pub fn keep_all(&self) -> bool {
+        for &i in self.to_keep.iter() {
             if i == 0 {
                 return false;
             }
@@ -806,32 +921,32 @@ impl Dice {
         true
     }
 
-    pub fn roll(dice: &mut Dice) {
-        for (i, &item) in dice.to_keep.iter().enumerate() {
+    pub fn roll(&mut self) {
+        for (i, &item) in self.to_keep.iter().enumerate() {
             if item == 0 as usize {
-                dice.current[i] = rand::thread_rng().gen_range(1, 7);
+                self.current[i] = rand::thread_rng().gen_range(1, 7);
             } else {
-                dice.current[i] = item;
+                self.current[i] = item;
             }
         }
     }
 
-    pub fn reroll_all(dice: &mut Dice) {
-        for die in &mut dice.current.iter_mut() {
+    pub fn reroll_all(&mut self) {
+        for die in &mut self.current.iter_mut() {
             *die = rand::thread_rng().gen_range(1, 7);
         }
-        for die in &mut dice.to_keep {
+        for die in &mut self.to_keep {
             *die = 0 as usize;
         }
     }
-    
-    pub fn print(dice: &Dice) {
+
+    pub fn print(&self) {
         let mut dot: [[char; 15]; 3] = [[' '; 15]; 3];
 
-        for (i, item) in dice.current.iter().enumerate() {
+        for (i, item) in self.current.iter().enumerate() {
             match item {
                 1 => {
-                    if dice.to_keep[i] > 0 {
+                    if self.to_keep[i] > 0 {
                         match i {
                             0 => dot[1][1] = '●',
                             1 => dot[1][4] = '●',
@@ -850,7 +965,7 @@ impl Dice {
                     }
                 },
                 2 => {
-                    if dice.to_keep[i] > 0 {
+                    if self.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][1] = '●';
                                    dot[2][0] = '●'; },
@@ -879,7 +994,7 @@ impl Dice {
                     }
                 },
                 3 => {
-                    if dice.to_keep[i] > 0 {
+                    if self.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][1] = '●';
                                    dot[1][1] = '●';
@@ -918,7 +1033,7 @@ impl Dice {
                     }
                 },
                 4 => {
-                    if dice.to_keep[i] > 0 {
+                    if self.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][0] = '●';
                                    dot[0][1] = '●';
@@ -967,7 +1082,7 @@ impl Dice {
                     }
                 },
                 5 => {
-                    if dice.to_keep[i] > 0 {
+                    if self.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][0] = '●';
                                    dot[0][1] = '●';
@@ -1026,7 +1141,7 @@ impl Dice {
                     }
                 },
                 _ => {
-                    if dice.to_keep[i] > 0 {
+                    if self.to_keep[i] > 0 {
                         match i {
                             0 => { dot[0][0] = '●';
                                    dot[0][1] = '●';
@@ -1111,10 +1226,12 @@ impl Dice {
         println!("╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝");
     }
 
-    pub fn select(dice: &mut Dice,
+
+    pub fn select(&mut self,
                   left_margin: &mut String,
                   margin_width: &mut usize,
                   selected: &mut [usize; 5]) -> DiceSelectStatus {
+
         // Enter raw mode
         // Get the standard input stream.
         let stdin = stdin();
@@ -1131,7 +1248,7 @@ impl Dice {
 
         // Flush stdout (i.e. make the output appear).
         stdout.flush().unwrap();
-        println!("{}●━━━━━━━●{}", *left_margin, termion::cursor::Goto(1, bottom_line -4));
+        println!("{}●━━━━━━━●{}", left_margin, termion::cursor::Goto(1, bottom_line -4));
 
         for c in stdin.keys() {
             // Clear the current line.
@@ -1142,12 +1259,12 @@ impl Dice {
                 Key::Char('\n') => { selected[*margin_width] = 1;
                                      return DiceSelectStatus::Complete;},
                 Key::Char(' ')  => { println!("{}●━━━━━━━●{}", *left_margin, termion::cursor::Goto(1, bottom_line -4));
-                                     if selected[*margin_width] == 0 && dice.to_keep[*margin_width] == 0 {
-                                         dice.to_keep[*margin_width] = dice.current[*margin_width];
+                                     if selected[*margin_width] == 0 && self.to_keep[*margin_width] == 0 {
+                                         self.to_keep[*margin_width] = self.current[*margin_width];
                                          selected[*margin_width] = 1;
                                          return DiceSelectStatus::Incomplete;
                                      } else {
-                                         dice.to_keep[*margin_width] = 0;
+                                         self.to_keep[*margin_width] = 0;
                                          selected[*margin_width] = 0;
                                          return DiceSelectStatus::Incomplete;
                                      } },
@@ -1216,109 +1333,6 @@ impl Dice {
     }
 }
 
-fn select_slot(dice: &Dice,
-                   validators: [fn(&[usize; 5]) -> Option<usize>; 15],
-                   scores: &mut [Score],
-                   lines_selected: &mut [u8],
-                   i: &mut usize) -> SlotSelectStatus {
-
-    // Enter raw mode
-    // Get the standard input stream.
-    let stdin = stdin();
-    // Get the standard output stream and go to raw mode.
-    let mut stdout = stdout().into_raw_mode().unwrap();
-    write!(stdout, "{}", termion::cursor::Hide).unwrap();
-    // Flush stdout (i.e. make the output appear).
-    stdout.flush().unwrap();
-
-    for c in stdin.keys() {
-        match c.unwrap() {
-            Key::Ctrl(c) => { if c == 'c' { return SlotSelectStatus::Exit; } },
-            Key::Char('\n') => { if scores[*i].value != "  ".to_string()
-                                 { return SlotSelectStatus::AlreadySelected;
-                                 } else if validators[*i](&dice.current) != None {
-                                     println!("validators[*i](dice) != None");
-                                     if validators[*i](&dice.current).unwrap() > 9 {
-                                         scores[*i].value.replace_range(.., &validators[*i](&dice.current).unwrap().to_string());
-                                     } else {
-                                         scores[*i].value.replace_range(1.., &validators[*i](&dice.current).unwrap().to_string());
-                                     }
-                                     scores[*i].selected = true;
-                                     stdout.flush().unwrap();
-                                     return SlotSelectStatus::Complete;
-                                 } else {
-                                     scores[*i].selected = true;
-                                     stdout.flush().unwrap();
-                                     return SlotSelectStatus::Invalid;
-                                 }
-            },
-            Key::Char('-') => { if scores[*i].value == "  ".to_string() {
-                scores[*i].selected = true;
-                scores[*i].value.replace_range(1.., "–");
-                stdout.flush().unwrap();
-                return SlotSelectStatus::Complete;
-            } },
-            Key::Up      => { if i > &mut 0
-                              {
-                                  *i -= 1;
-                                  lines_selected[*i] = 1;
-                                  lines_selected[*i+1] = 0;
-                                  return SlotSelectStatus::Incomplete;
-                              } else {
-                                  *i = 14;
-                                  lines_selected[*i] = 1;
-                                  lines_selected[0] = 0;
-                                  return SlotSelectStatus::Incomplete;
-                              } },
-            Key::Left      => { if *i > 0
-                                {
-                                    *i -= 1;
-                                    lines_selected[*i] = 1;
-                                    lines_selected[*i+1] = 0;
-                                    return SlotSelectStatus::Incomplete;
-                                } else {
-                                    *i = 14;
-                                    lines_selected[*i] = 1;
-                                    lines_selected[0] = 0;
-                                    return SlotSelectStatus::Incomplete;
-                                } },
-            Key::Down      => { if *i < 14
-                                {
-                                    *i += 1;
-                                    lines_selected[*i] = 1;
-                                    lines_selected[*i-1] = 0;
-                                    return SlotSelectStatus::Incomplete;
-                                } else {
-                                    *i = 0;
-                                    lines_selected[*i] = 1;
-                                    lines_selected[14] = 0;
-                                    return SlotSelectStatus::Incomplete;
-                                } },
-            Key::Right      => { if *i < 14
-                                 {
-                                     *i += 1;
-                                     lines_selected[*i] = 1;
-                                     lines_selected[*i-1] = 0;
-                                     return SlotSelectStatus::Incomplete;
-                                 } else {
-                                     *i = 0;
-                                     lines_selected[*i] = 1;
-                                     lines_selected[14] = 0;
-                                     return SlotSelectStatus::Incomplete;
-                                 } },
-            _              => continue,
-        }
-    }
-
-    // Flush again.
-    stdout.flush().unwrap();
-
-    // Show the cursor again before we exit.
-    write!(stdout, "{}", termion::cursor::Show).unwrap();
-    SlotSelectStatus::Incomplete
-}
-
-
 pub fn welcome() {
     println!("R U S T Y R U S T Y R U S T Y R U S T Y R U S T Y");
     println!("U       A U       A U       A U       A U       A");
@@ -1336,6 +1350,10 @@ pub fn welcome() {
             _ => continue,
         }
     }
-        
+
     stdout.flush().unwrap();
+}
+
+pub fn clear_screen() {
+    println!("{}", clear::All);
 }
