@@ -1226,11 +1226,34 @@ impl Dice {
         println!("╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝");
     }
 
+    pub fn select(&mut self, score: &mut Scores, count: &i32, lp: &mut bool) {
+        let mut selected: [usize; 5] = [0, 0, 0, 0, 0];
+        let mut left_margin = "".to_string();
+        let mut margin_width: usize = 0;
+        loop {
+            clear_screen();
+            if *count == 2 {
+                println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll\n  for the last time.");
+            } else {
+                println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll.");
 
-    pub fn select(&mut self,
-                  left_margin: &mut String,
-                  margin_width: &mut usize,
-                  selected: &mut [usize; 5]) -> DiceSelectStatus {
+            }
+            score.print();
+            self.print();
+            match self.select_checker(&mut left_margin, &mut margin_width,
+                                      &mut selected) {
+                DiceSelectStatus::Exit => {
+                    *lp = false;
+                    break;
+                },
+                DiceSelectStatus::Complete => break,
+                DiceSelectStatus::Incomplete => continue,
+            };
+        }
+    }
+    fn select_checker(&mut self, left_margin: &mut String,
+                      margin_width: &mut usize, selected: &mut [usize; 5])
+                      -> DiceSelectStatus {
 
         // Enter raw mode
         // Get the standard input stream.

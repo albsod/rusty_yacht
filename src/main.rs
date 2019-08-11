@@ -26,7 +26,6 @@ use rusty_yacht::Dice;
 use rusty_yacht::Scores;
 use rusty_yacht::ScoreValidator;
 use rusty_yacht::Highscore;
-use rusty_yacht::DiceSelectStatus;
 use rusty_yacht::welcome;
 use rusty_yacht::clear_screen;
 
@@ -41,7 +40,7 @@ fn main() {
     score.print();
     welcome();
 
-    let mut count: u8 = 0;
+    let mut count = 0;
     let mut lp: bool = true;
     while lp {
         clear_screen();
@@ -49,40 +48,17 @@ fn main() {
         score.print();
 
         if count < 2 && dice.keep_all() == false {
+            // Continue to roll
             clear_screen();
             score.print();
             dice.roll();
             count += 1;
             dice.print();
-
-            let mut selected: [usize; 5] = [0, 0, 0, 0, 0];
-            let mut left_margin = "".to_string();
-            let mut margin_width: usize = 0;
-            loop {
-                clear_screen();
-                if count == 2 {
-                    println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll\n  for the last time.");
-                } else {
-                    println!("  Use the arrow keys and Space to toggle which\n  dice to keep. Then press Enter to reroll.");
-
-                }
-                score.print();
-                dice.print();
-                match dice.select(&mut left_margin, &mut margin_width,
-                                  &mut selected) {
-                    DiceSelectStatus::Exit => {
-                        lp = false;
-                        break;
-                    },
-                    DiceSelectStatus::Complete => break,
-                    DiceSelectStatus::Incomplete => continue,
-                };
-            }
-
-        // Time to place points
-        } else if count > 1 || dice.keep_all() {
-            count = 0;
+            dice.select(&mut score, &count, &mut lp);           
+        } else {
+            // Time to place points
             dice.roll();
+            count = 0;
             clear_screen();
             println!("  Where do you want to place your points?");
             println!("  Use the arrow keys and press Enter to select.");
