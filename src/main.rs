@@ -41,20 +41,19 @@ fn main() {
     welcome();
 
     let mut count = 0;
-    let mut lp: bool = true;
-    while lp {
+    loop {
         clear_screen();
         println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
         score.print();
 
-        if count < 2 && dice.keep_all() == false {
+        if count < 2 && !dice.keep_all() {
             // Continue to roll
             clear_screen();
             score.print();
             dice.roll();
             count += 1;
             dice.print();
-            dice.select(&mut score, &count, &mut lp);           
+            dice.select(&mut score, &count);           
         } else {
             // Time to place points
             dice.roll();
@@ -62,7 +61,7 @@ fn main() {
             clear_screen();
             println!("  Where do you want to place your points?");
             println!("  Use the arrow keys and press Enter to select.");
-            score.place_points(validators, &dice, &mut lp);
+            score.place_points(validators, &dice);
 
             if score.is_final() {
                 clear_screen();
