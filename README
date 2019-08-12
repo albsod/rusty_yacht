@@ -1,9 +1,11 @@
 Rusty Yacht README
 ------------------
 
-Version 0.9.4 by Albin Söderqvist <albin@fripost.org>, June 2019.
+Version 0.9.6 by Albin Söderqvist <albin@fripost.org>, August 2019.
 
-Rusty Yacht is a Yatzy game for the terminal implemented in Rust.
+Rusty Yacht is a Yatzy game for the terminal, implemented in
+the Rust programming language.
+
 
 Rules
 =====
@@ -11,16 +13,18 @@ Rules
 The rules below are taken from the Wikipedia article "Yatzy"
 (https://en.wikipedia.org/wiki/Yatzy; CC BY-SA 3.0) with minor changes.
 
+
 Gameplay
 --------
 
-Yatzy can be played solitaire or by any number of players. Rusty Yacht
-currenty supports just the former. Players take turns rolling five dice.
+Yatzy can be played solitaire or by any number of players.  Rusty Yacht
+currenty supports just the former.  Players take turns rolling five dice.
 After each roll, the player chooses which dice to keep, and which to reroll.
 A player may reroll some or all of the dice up to two times on a turn.
-The player must put a score or a dash into a score box each turn. The game ends
-when all score boxes are used. The player with the highest total score wins
+The player must put a score or a dash into a score box each turn.  The game ends
+when all score boxes are used.  The player with the highest total score wins
 the game.
+
 
 Scoring
 -------
@@ -39,8 +43,9 @@ Fours       ---------------- * * ----------------- 4
 Fives       ---------------- * * ----------------- 5
 Sixes       ---------------- * * ----------------- 6
 
-If a player manages to score at least 63 points (an average of three
-of each number) in the upper section, they are awarded a bonus of 50 points.
+A score of at least 63 points (an average of three of each number) in the upper
+section, awards a bonus of 50 points.
+
 
 Lower Section
 -------------
@@ -59,14 +64,15 @@ Chance           Any combination of dice             Sum of all the dice
 Yatzy            All five dice with the same number  50 points
 
 Two Pairs and Full House must have different numbers so that e.g. the combination
-15566 will score 22 as Two Pairs, but 55555 will score nothing in any of those
-categories.
+1-5-5-6-6 will score 22 as Two Pairs, but 5-5-5-5-5 will score nothing in any
+of those categories.
 
 Some combinations offer the player a choice as to which category to score them
-under. A full house could be scored in the Full House, the Three-of-a-Kind,
-Two Pairs, One Pair or the Chance categories. 22555 would thus score 19
-in Full House or Chance, 15 in Three-of-a-Kind, 14 in Two Pairs or 10
+under.  A full house could be scored in the Full House, the Three of a Kind,
+Two Pairs, One Pair or the Chance categories.  2-2-5-5-5 would thus score 19
+in Full House or Chance, 15 in Three of a Kind, 14 in Two Pairs or 10
 in One Pair.
+
 
 Copying conditions
 ==================
@@ -77,4 +83,3 @@ Chrono library <https://crates.io/crates/chrono>: Apache-2.0 or MIT/X11
 Dirs library <https://crates.io/crates/dirs>: Apache-2.0 or MIT/X11
 Random library <https://crates.io/crates/rand>: Apache-2.0 or MIT/X11
 Termion library <https://crates.io/crates/termion>: MIT/X11
-The Rust Programming language <https://rust-lang.org>: Apache-2.0 or MIT/X11
