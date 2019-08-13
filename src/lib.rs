@@ -1364,7 +1364,10 @@ pub fn welcome() {
     for c in stdin.keys() {
         match c.unwrap() {
             Key::Char('\n') => break,
-            Key::Ctrl(c) => if c == 'c' { break; } else { continue; },
+            Key::Ctrl(c) => if c == 'c' {
+                stdout.suspend_raw_mode().unwrap();
+                std::process::exit(0);
+            },
             _ => continue,
         }
     }
