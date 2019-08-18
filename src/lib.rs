@@ -307,81 +307,102 @@ impl ScoreValidator {
     }
 }
 
-struct Score {
+pub struct ScoreCategory {
     name: &'static str,
     value: String,
     selected: bool,
     highlighted: bool,
 }
 
-pub struct Scores {
-    scores: [Score; 18],
+pub struct Score([ScoreCategory; 18]);
+
+impl<'a> IntoIterator for &'a Score {
+    type Item = &'a ScoreCategory;
+    type IntoIter = std::slice::Iter<'a, ScoreCategory>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
 }
 
-impl Scores {
-    pub fn new() -> Scores {
+impl std::ops::Deref for Score {
+    type Target = [ScoreCategory];
+
+    fn deref(&self) -> &[ScoreCategory] {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for Score {
+    fn deref_mut(&mut self) -> &mut [ScoreCategory] {
+        &mut self.0
+    }
+}
+
+impl Score {
+    pub fn new() -> Score {
         // initialize score values
-        let score_ones = Score {
+        let score_ones = ScoreCategory {
             name: "Ones", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_twos = Score {
+        let score_twos = ScoreCategory {
             name: "Twos", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_threes = Score {
+        let score_threes = ScoreCategory {
             name: "Threes", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_fours = Score {
+        let score_fours = ScoreCategory {
             name: "Fours", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_fives = Score {
+        let score_fives = ScoreCategory {
             name: "Fives", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_sixes = Score {
+        let score_sixes = ScoreCategory {
             name: "Sixes", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_bonus = Score {
+        let score_bonus = ScoreCategory {
             name: "Bonus", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_one_pair = Score {
+        let score_one_pair = ScoreCategory {
             name: "One Pair", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_two_pairs = Score {
+        let score_two_pairs = ScoreCategory {
             name: "Two Pairs", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_three_kind = Score {
+        let score_three_kind = ScoreCategory {
             name: "Three of a Kind", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_four_kind = Score {
+        let score_four_kind = ScoreCategory {
             name: "Four of a Kind", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_small_str = Score {
+        let score_small_str = ScoreCategory {
             name: "Small Straight", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_large_str = Score {
+        let score_large_str = ScoreCategory {
             name: "Large Straight", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_full_house = Score {
+        let score_full_house = ScoreCategory {
             name: "Full House", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_chance = Score {
+        let score_chance = ScoreCategory {
             name: "Chance", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_yatzy = Score {
+        let score_yatzy = ScoreCategory {
             name: "Yatzy", value: "  ".to_string(), selected: false, highlighted: false
         };
-        let score_subtotal = Score {
+        let score_subtotal = ScoreCategory {
             name: "Sum", value: "   ".to_string(), selected: false, highlighted: false
         };
-        let score_total = Score {
+        let score_total = ScoreCategory {
             name: "Total", value: "   ".to_string(), selected: false, highlighted: false
         };
 
-        // Return the score values as a Scores struct
-        Scores {scores: [score_ones, score_twos, score_threes, score_fours,
-                         score_fives, score_sixes, score_one_pair, score_two_pairs,
-                         score_three_kind, score_four_kind, score_small_str,
-                         score_large_str, score_full_house, score_chance,
-                         score_yatzy, score_bonus, score_subtotal, score_total]}
+        // Return the score values as a Score struct
+        Score ([score_ones, score_twos, score_threes, score_fours,
+                 score_fives, score_sixes, score_one_pair, score_two_pairs,
+                 score_three_kind, score_four_kind, score_small_str,
+                 score_large_str, score_full_house, score_chance,
+                 score_yatzy, score_bonus, score_subtotal, score_total])
     }
 
     pub fn print(&mut self) {
@@ -389,34 +410,34 @@ impl Scores {
         let mut subtotal: u8 = 0;
         let mut total: u16 = 0;
 
-        for elm in self.scores[0..6].iter() {
+        for elm in self[0..6].iter() {
             if elm.value != "  " && elm.value != "   " && elm.value != " –" {
                 subtotal += elm.value.trim().parse::<u8>().unwrap();
             }
         }
 
         if subtotal > 99 {
-            self.scores[16].value.replace_range(.., &subtotal.to_string());
+            self[16].value.replace_range(.., &subtotal.to_string());
         } else if subtotal > 9 {
-            self.scores[16].value.replace_range(1.., &subtotal.to_string());
+            self[16].value.replace_range(1.., &subtotal.to_string());
         } else if subtotal > 0 {
-            self.scores[16].value.replace_range(2.., &subtotal.to_string());
+            self[16].value.replace_range(2.., &subtotal.to_string());
         }
 
         if subtotal > 62 {
-            self.scores[15].value.replace_range(.., "50");
+            self[15].value.replace_range(.., "50");
         } else if
-            self.scores[0].value != "  " &&
-            self.scores[1].value != "  " &&
-            self.scores[2].value != "  " &&
-            self.scores[3].value != "  " &&
-            self.scores[4].value != "  " &&
-            self.scores[5].value != "  "
+            self[0].value != "  " &&
+            self[1].value != "  " &&
+            self[2].value != "  " &&
+            self[3].value != "  " &&
+            self[4].value != "  " &&
+            self[5].value != "  "
         {
-            self.scores[15].value.replace_range(1.., "–");
+            self[15].value.replace_range(1.., "–");
         }
 
-        for elm in self.scores.iter() {
+        for elm in self.iter() {
             if elm.value != "  " &&
                 elm.value != "   " &&
                 elm.value != " –" &&
@@ -426,11 +447,11 @@ impl Scores {
         }
 
         if total > 99 {
-            self.scores[17].value.replace_range(.., &total.to_string());
+            self[17].value.replace_range(.., &total.to_string());
         } else if total > 9 {
-            self.scores[17].value.replace_range(1.., &total.to_string());
+            self[17].value.replace_range(1.., &total.to_string());
         } else if total > 0 {
-            self.scores[17].value.replace_range(2.., &total.to_string());
+            self[17].value.replace_range(2.., &total.to_string());
         }
 
         println!("╔═══════════════════════════════════════════════╗");
@@ -438,120 +459,120 @@ impl Scores {
         println!("╠═══════════════════════════╦═══════════════════╣");
         println!("║                       Max ║             Score ║");
         println!("╟───────────────────────────╫───────────────────╢");
-        if self.scores[0].highlighted == true {
+        if self[0].highlighted == true {
             println!("║{} Ones                    5 {}║{}                {} {}║",
                      style::Invert, style::Reset, style::Invert,
-                     self.scores[0].value, style::Reset);
+                     self[0].value, style::Reset);
         } else { println!("║ Ones                    5 ║                {} ║",
-                          self.scores[0].value); }
-        if self.scores[1].highlighted == true {
+                          self[0].value); }
+        if self[1].highlighted == true {
             println!("║{} Twos                   10 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[1].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[1].value, style::Reset);
         } else {
             println!("║ Twos                   10 ║                {} ║",
-                     self.scores[1].value); }
-        if self.scores[2].highlighted == true {
+                     self[1].value); }
+        if self[2].highlighted == true {
             println!("║{} Threes                 15 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[2].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[2].value, style::Reset);
         } else {
             println!("║ Threes                 15 ║                {} ║",
-                     self.scores[2].value); }
-        if self.scores[3].highlighted == true {
+                     self[2].value); }
+        if self[3].highlighted == true {
             println!("║{} Fours                  20 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[3].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[3].value, style::Reset);
         } else {println!("║ Fours                  20 ║                {} ║",
-                         self.scores[3].value); }
-        if self.scores[4].highlighted == true {
+                         self[3].value); }
+        if self[4].highlighted == true {
             println!("║{} Fives                  25 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[4].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[4].value, style::Reset);
         } else {
             println!("║ Fives                  25 ║                {} ║",
-                     self.scores[4].value); }
-        if self.scores[5].highlighted == true {
+                     self[4].value); }
+        if self[5].highlighted == true {
             println!("║{} Sixes                  30 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[5].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[5].value, style::Reset);
         } else { println!("║ Sixes                  30 ║                {} ║",
-                          self.scores[5].value); }
+                          self[5].value); }
         println!("╟───────────────────────────╫───────────────────╢");
-        if self.scores[16].highlighted == true {
+        if self[16].highlighted == true {
             println!("║{} Sum                105 {}║{}                    {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[16].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[16].value, style::Reset);
         } else { println!("║ Sum                   105 ║               {} ║",
-                          self.scores[16].value); }
-        println!("║ Bonus                  50 ║                {} ║", self.scores[15].value);
+                          self[16].value); }
+        println!("║ Bonus                  50 ║                {} ║", self[15].value);
         //println!("╟───────────────────────────╫───────────────────╢");
-        if self.scores[6].highlighted == true {
+        if self[6].highlighted == true {
             println!("║{} One Pair               12 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[6].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[6].value, style::Reset);
         } else { println!("║ One Pair               12 ║                {} ║",
-                          self.scores[6].value); }
-        if self.scores[7].highlighted == true {
+                          self[6].value); }
+        if self[7].highlighted == true {
             println!("║{} Two Pairs              22 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[7].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[7].value, style::Reset);
         } else {
             println!("║ Two Pairs              22 ║                {} ║",
-                     self.scores[7].value); }
-        if self.scores[8].highlighted == true {
+                     self[7].value); }
+        if self[8].highlighted == true {
             println!("║{} Three of a Kind        18 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[8].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[8].value, style::Reset);
         } else {
             println!("║ Three of a Kind        18 ║                {} ║",
-                     self.scores[8].value);
+                     self[8].value);
         }
-        if self.scores[9].highlighted == true {
+        if self[9].highlighted == true {
             println!("║{} Four of a Kind         24 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[9].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[9].value, style::Reset);
         } else {
             println!("║ Four of a Kind         24 ║                {} ║",
-                     self.scores[9].value);
+                     self[9].value);
         }
-        if self.scores[10].highlighted == true {
+        if self[10].highlighted == true {
             println!("║{} Small Straight         15 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[10].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[10].value, style::Reset);
         } else {
             println!("║ Small Straight         15 ║                {} ║",
-                     self.scores[10].value);
+                     self[10].value);
         }
-        if self.scores[11].highlighted == true {
+        if self[11].highlighted == true {
             println!("║{} Large Straight         20 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[11].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[11].value, style::Reset);
         } else {
             println!("║ Large Straight         20 ║                {} ║",
-                     self.scores[11].value);
+                     self[11].value);
         }
-        if self.scores[12].highlighted == true {
+        if self[12].highlighted == true {
             println!("║{} Full House             28 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[12].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[12].value, style::Reset);
         } else {
             println!("║ Full House             28 ║                {} ║",
-                     self.scores[12].value);
+                     self[12].value);
         }
-        if self.scores[13].highlighted == true {
+        if self[13].highlighted == true {
             println!("║{} Chance                 30 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[13].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[13].value, style::Reset);
         } else {
             println!("║ Chance                 30 ║                {} ║",
-                     self.scores[13].value);
+                     self[13].value);
         }
-        if self.scores[14].highlighted == true {
+        if self[14].highlighted == true {
             println!("║{} Yatzy                  50 {}║{}                {} {}║",
-                     style::Invert, style::Reset, style::Invert, self.scores[14].value, style::Reset);
+                     style::Invert, style::Reset, style::Invert, self[14].value, style::Reset);
         } else {
             println!("║ Yatzy                  50 ║                {} ║",
-                     self.scores[14].value);
+                     self[14].value);
         }
         println!("╟───────────────────────────╫───────────────────╢");
-        println!("║ Total                 374 ║               {} ║", self.scores[17].value);
+        println!("║ Total                 374 ║               {} ║", self[17].value);
         println!("╚═══════════════════════════╩═══════════════════╝");
 
-        self.scores[17].value.replace_range(.., "   ");
+        self[17].value.replace_range(.., "   ");
     }
 
     pub fn place_points(&mut self, validators: [fn(&[usize; 5]) -> Option<usize>; 15],
                         dice: &Dice) {
         let mut i: usize = 0;
         loop {
-            self.scores[i].highlighted = true;
+            self[i].highlighted = true;
             self.print();
             dice.print();
 
@@ -578,24 +599,24 @@ impl Scores {
                                                                Key::Up => {
                                                                    if i != 0 {
                                                                        i -= 1;
-                                                                       self.scores[i+1].highlighted = false;
+                                                                       self[i+1].highlighted = false;
                                                                    } else {
                                                                        i = 14;
-                                                                       self.scores[0].highlighted = false;
+                                                                       self[0].highlighted = false;
                                                                    }
-                                                                   self.scores[i].highlighted = true;
+                                                                   self[i].highlighted = true;
                                                                    println!("{}", clear::All);
                                                                    break;
                                                                },
                                                                Key::Down => {
                                                                    if i != 14 {
                                                                        i += 1;
-                                                                       self.scores[i-1].highlighted = false;
+                                                                       self[i-1].highlighted = false;
                                                                    } else {
                                                                        i = 0;
-                                                                       self.scores[14].highlighted = false;
+                                                                       self[14].highlighted = false;
                                                                    }
-                                                                   self.scores[i].highlighted = true;
+                                                                   self[i].highlighted = true;
                                                                    println!("{}", clear::All);
                                                                    break;
                                                                },
@@ -637,11 +658,11 @@ impl Scores {
                 },
             }
         }
-        self.scores[i].highlighted = false;
+        self[i].highlighted = false;
         println!("{}", clear::All);
     }
     pub fn is_final(&self) -> bool {
-        for item in self.scores.iter() {
+        for item in self.iter() {
             if item.name == "Bonus" {
                 continue;
             }
@@ -672,28 +693,28 @@ impl Scores {
                     }
                 },
                 Key::Char('\n') => {
-                    if self.scores[*i].value != "  ".to_string() {
+                    if self[*i].value != "  ".to_string() {
                         return SlotSelectStatus::AlreadySelected;
                     } else if validators[*i](&dice.current) != None {
                         //println!("validators[*i](dice) != None"); // ???
                         if validators[*i](&dice.current).unwrap() > 9 {
-                            self.scores[*i].value.replace_range(.., &validators[*i](&dice.current).unwrap().to_string());
+                            self[*i].value.replace_range(.., &validators[*i](&dice.current).unwrap().to_string());
                         } else {
-                            self.scores[*i].value.replace_range(1.., &validators[*i](&dice.current).unwrap().to_string());
+                            self[*i].value.replace_range(1.., &validators[*i](&dice.current).unwrap().to_string());
                         }
-                        self.scores[*i].selected = true;
+                        self[*i].selected = true;
                         stdout.flush().unwrap();
                         return SlotSelectStatus::Complete;
                     } else {
-                        self.scores[*i].selected = true;
+                        self[*i].selected = true;
                         stdout.flush().unwrap();
                         return SlotSelectStatus::Invalid;
                     }
                 },
                 Key::Char('-') => {
-                    if self.scores[*i].value == "  ".to_string() {
-                        self.scores[*i].selected = true;
-                        self.scores[*i].value.replace_range(1.., "–");
+                    if self[*i].value == "  ".to_string() {
+                        self[*i].selected = true;
+                        self[*i].value.replace_range(1.., "–");
                         stdout.flush().unwrap();
                         return SlotSelectStatus::Complete;
                     }
@@ -701,52 +722,52 @@ impl Scores {
                 Key::Up => {
                     if i > &mut 0 {
                         *i -= 1;
-                        self.scores[*i].highlighted = true;
-                        self.scores[*i+1].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[*i+1].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     } else {
                         *i = 14;
-                        self.scores[*i].highlighted = true;
-                        self.scores[0].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[0].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     }
                 },
                 Key::Left => {
                     if *i > 0 {
                         *i -= 1;
-                        self.scores[*i].highlighted = true;
-                        self.scores[*i+1].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[*i+1].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     } else {
                         *i = 14;
-                        self.scores[*i].highlighted = true;
-                        self.scores[0].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[0].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     }
                 },
                 Key::Down => {
                     if *i < 14 {
                         *i += 1;
-                        self.scores[*i].highlighted = true;
-                        self.scores[*i-1].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[*i-1].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     } else {
                         *i = 0;
-                        self.scores[*i].highlighted = true;
-                        self.scores[14].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[14].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     }
                 },
                 Key::Right => {
                     if *i < 14 {
                         *i += 1;
-                        self.scores[*i].highlighted = true;
-                        self.scores[*i-1].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[*i-1].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     } else {
                         *i = 0;
-                        self.scores[*i].highlighted = true;
-                        self.scores[14].highlighted = false;
+                        self[*i].highlighted = true;
+                        self[14].highlighted = false;
                         return SlotSelectStatus::Incomplete;
                     }
                 },
@@ -836,7 +857,7 @@ impl Highscore {
         println!("╚══════════════════════════╩════════════╩═══════╝");
     }
 
-    pub fn log(path: &std::path::PathBuf, scores: Scores) {
+    pub fn log(path: &std::path::PathBuf, score: Score) {
         let mut name = String::new();
         loop {
             println!("Input a name to log your score:");
@@ -845,7 +866,6 @@ impl Highscore {
             name.pop(); // remove trailing newline
             let namelen = name.chars().count();
             if namelen < 1 {
-                ;
             } else if namelen > 24 {
                 println!("Too long! Max length is 24 characters.\n");
                 name = String::from("");
@@ -874,7 +894,7 @@ impl Highscore {
             });
         let mut total: u16 = 0;
 
-        for elm in scores.scores.iter() {
+        for elm in score.iter() {
             if elm.value != "  " &&
                 elm.value != "   " &&
                 elm.value != " –" &&
@@ -1224,7 +1244,7 @@ impl Dice {
         println!("╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝");
     }
 
-    pub fn select(&mut self, score: &mut Scores, count: &i32) {
+    pub fn select(&mut self, score: &mut Score, count: &i32) {
         let mut selected: [usize; 5] = [0, 0, 0, 0, 0];
         let mut left_margin = "".to_string();
         let mut margin_width: usize = 0;

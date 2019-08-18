@@ -23,7 +23,7 @@ extern crate dirs;
 extern crate rusty_yacht;
 
 use rusty_yacht::Dice;
-use rusty_yacht::Scores;
+use rusty_yacht::Score;
 use rusty_yacht::ScoreValidator;
 use rusty_yacht::Highscore;
 use rusty_yacht::welcome;
@@ -33,7 +33,7 @@ fn main() {
     let file = Highscore::new_path();
     let mut dice = Dice::new();
     let validators = ScoreValidator::new();
-    let mut score = Scores::new();
+    let mut score = Score::new();
 
     clear_screen();
     println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
