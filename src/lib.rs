@@ -53,6 +53,7 @@ pub struct ScoreValidator;
 
 impl ScoreValidator {
     pub fn new() -> [fn(&[usize; 5]) -> Option<usize>; 15] {
+
         fn ones(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
             for i in current {
@@ -65,8 +66,8 @@ impl ScoreValidator {
             }
             None
         }
-
-        fn twos(current: &[usize; 5]) -> Option<usize> {
+ 
+       fn twos(current: &[usize; 5]) -> Option<usize> {
             let mut value: usize = 0;
             for i in current {
                 if i == &2 {
@@ -248,26 +249,18 @@ impl ScoreValidator {
         fn small_str(current: &[usize; 5]) -> Option<usize> {
             let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
-            if dice_str[0] == 1 &&
-                dice_str[1] == 2 &&
-                dice_str[2] == 3 &&
-                dice_str[3] == 4 &&
-                dice_str[4] == 5 {
-                    return Some(15);
-                }
+            if dice_str == [1, 2, 3, 4, 5] {
+                return Some(15);
+            }
             None
         }
 
         fn large_str(current: &[usize; 5]) -> Option<usize> {
             let mut dice_str: [usize; 5] = current.clone();
             dice_str.sort();
-            if dice_str[0] == 2 &&
-                dice_str[1] == 3 &&
-                dice_str[2] == 4 &&
-                dice_str[3] == 5 &&
-                dice_str[4] == 6 {
+            if dice_str == [2, 3, 4, 5, 6] {
                     return Some(20);
-                }
+            }
             None
         }
 
@@ -415,17 +408,16 @@ impl Score {
                 subtotal += elm.value.trim().parse::<u8>().unwrap();
             }
         }
-
-        if subtotal > 99 {
-            self[16].value.replace_range(.., &subtotal.to_string());
-        } else if subtotal > 9 {
-            self[16].value.replace_range(1.., &subtotal.to_string());
-        } else if subtotal > 0 {
-            self[16].value.replace_range(2.., &subtotal.to_string());
+        if subtotal > 0 {
+            self[16].value = format!("{:>3}", subtotal);
+        }
+        
+        if total > 0 {
+            self[17].value = format!("{:>3}", total);
         }
 
         if subtotal > 62 {
-            self[15].value.replace_range(.., "50");
+            self[15].value = format!("50");
         } else if
             self[0].value != "  " &&
             self[1].value != "  " &&
@@ -434,7 +426,7 @@ impl Score {
             self[4].value != "  " &&
             self[5].value != "  "
         {
-            self[15].value.replace_range(1.., "–");
+            self[15].value = format!(" –");
         }
 
         for elm in self.iter() {
@@ -446,12 +438,8 @@ impl Score {
                 }
         }
 
-        if total > 99 {
-            self[17].value.replace_range(.., &total.to_string());
-        } else if total > 9 {
-            self[17].value.replace_range(1.., &total.to_string());
-        } else if total > 0 {
-            self[17].value.replace_range(2.., &total.to_string());
+        if total > 0 {
+            self[17].value = format!("{:>3}", total);
         }
 
         println!("╔═══════════════════════════════════════════════╗");
@@ -494,11 +482,10 @@ impl Score {
         } else { println!("║ Sixes                  30 ║                {} ║",
                           self[5].value); }
         println!("╟───────────────────────────╫───────────────────╢");
-        if self[16].highlighted == true {
-            println!("║{} Sum                105 {}║{}                    {} {}║",
-                     style::Invert, style::Reset, style::Invert, self[16].value, style::Reset);
-        } else { println!("║ Sum                   105 ║               {} ║",
-                          self[16].value); }
+        // if self[16].highlighted == true {
+        //     println!("║{} Sum                105 {}║{}                    {} {}║",
+        //              style::Invert, style::Reset, style::Invert, self[16].value, style::Reset); } else {
+        println!("║ Sum                   105 ║               {} ║", self[16].value);
         println!("║ Bonus                  50 ║                {} ║", self[15].value);
         //println!("╟───────────────────────────╫───────────────────╢");
         if self[6].highlighted == true {
@@ -562,10 +549,11 @@ impl Score {
                      self[14].value);
         }
         println!("╟───────────────────────────╫───────────────────╢");
-        println!("║ Total                 374 ║               {} ║", self[17].value);
+        println!("║ Total                 374 ║               {:>3} ║", self[17].value);
         println!("╚═══════════════════════════╩═══════════════════╝");
 
-        self[17].value.replace_range(.., "   ");
+        self[17].value = format!("   ");
+
     }
 
     pub fn place_points(&mut self, validators: [fn(&[usize; 5]) -> Option<usize>; 15],
@@ -696,12 +684,7 @@ impl Score {
                     if self[*i].value != "  ".to_string() {
                         return SlotSelectStatus::AlreadySelected;
                     } else if validators[*i](&dice.current) != None {
-                        //println!("validators[*i](dice) != None"); // ???
-                        if validators[*i](&dice.current).unwrap() > 9 {
-                            self[*i].value.replace_range(.., &validators[*i](&dice.current).unwrap().to_string());
-                        } else {
-                            self[*i].value.replace_range(1.., &validators[*i](&dice.current).unwrap().to_string());
-                        }
+                        self[*i].value = format!("{:>2}", &validators[*i](&dice.current).unwrap());
                         self[*i].selected = true;
                         stdout.flush().unwrap();
                         return SlotSelectStatus::Complete;
@@ -714,7 +697,7 @@ impl Score {
                 Key::Char('-') => {
                     if self[*i].value == "  ".to_string() {
                         self[*i].selected = true;
-                        self[*i].value.replace_range(1.., "–");
+                        self[*i].value = format!(" –");
                         stdout.flush().unwrap();
                         return SlotSelectStatus::Complete;
                     }
@@ -781,6 +764,13 @@ impl Score {
         // Show the cursor again before we exit.
         write!(stdout, "{}", termion::cursor::Show).unwrap();
         SlotSelectStatus::Incomplete
+    }
+
+    pub fn log(self, path: &std::path::PathBuf) {
+        Highscore::log(&path, self);
+        clear_screen();
+        let highscore = Highscore::new(&path);
+        Highscore::print(&highscore);
     }
 }
 

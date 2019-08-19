@@ -30,10 +30,10 @@ use rusty_yacht::welcome;
 use rusty_yacht::clear_screen;
 
 fn main() {
-    let file = Highscore::new_path();
     let mut dice = Dice::new();
-    let validators = ScoreValidator::new();
+    let validator = ScoreValidator::new();
     let mut score = Score::new();
+    let path = Highscore::new_path();
 
     clear_screen();
     println!("  Press Enter to roll the dice\n  or Ctrl+c at any time to exit.");
@@ -55,23 +55,20 @@ fn main() {
             dice.print();
             dice.select(&mut score, &count);           
         } else {
-            // Time to place points
             dice.roll();
             count = 0;
             clear_screen();
+            // Time to place points
             println!("  Where do you want to place your points?");
             println!("  Use the arrow keys and press Enter to select.");
-            score.place_points(validators, &dice);
+            score.place_points(validator, &dice);
 
             if score.is_final() {
                 clear_screen();
                 println!("  GAME OVER");
                 score.print();
                 dice.print();
-                Highscore::log(&file, score);
-                clear_screen();
-                let highscore = Highscore::new(&file);
-                Highscore::print(&highscore);
+                score.log(&path);
                 break;
             }
 
