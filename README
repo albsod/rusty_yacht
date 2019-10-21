@@ -1,11 +1,11 @@
 Rusty Yacht README
-------------------
-
-Version 0.9.6 by Albin Söderqvist <albin@fripost.org>, August 2019.
+==================
 
 Rusty Yacht is a Yatzy game for the terminal, implemented in
 the Rust programming language.
 
+Author: Albin Söderqvist
+Version: 0.9.6
 
 Rules
 =====
